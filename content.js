@@ -6,17 +6,16 @@ const provider = new HDWalletProvider(
         'https://rinkeby.infura.io/v3/ac236de4b58344d88976c12184cde32f');
 const web3 = new Web3(provider);
 
+const account = document.getElementById('account');
+const balance = document.getElementById('balance');
+
 
 const getBalance = async () => {
-    //alert("start");
-    const result = await web3.eth.getBalance("0x1A53069254c61f91D877581Dd8b6b2C683225C61");
-    alert("finish: " + web3.utils.fromWei(result, 'ether'));
+    const result = await web3.eth.getBalance(account.value);
+    balance.innerHTML = web3.utils.fromWei(result, 'ether');
 };
 
 
-const button = document.getElementById('get-balance');
-button.addEventListener("click", function() {
-    //alert('hello');
-
+document.getElementById('get-balance').addEventListener("click", function() {
     getBalance();
 }, false);
