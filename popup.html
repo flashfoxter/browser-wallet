@@ -4,7 +4,16 @@
     </head>
 
     <body>
-        <input id='account' type='text' />
+        Mnemonic: <input id='mnemonic' type='text' />
+        Network: <select id='network'>
+            <option value='rinkeby'>Rinkeby</option>
+            <option value='custom'>Custom</option>
+        </select>
+        <br/>Custom: <input id='custom' type='text' />
+        <button id='connect'>Connect</button> <label id='connected'></label>
+        <br/><br/>
+
+        Account: <input id='account' type='text' />
         <button id='get-balance'>Get balance</button>
         <br/>Balance: <label id='balance'></label>
 
