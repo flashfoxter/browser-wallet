@@ -13,8 +13,16 @@
         <button id='connect'>Connect</button> <label id='connected'>not connected</label>
         <br/><br/>
 
-        Account: <input id='account' type='text' />
+        Account: <input id='account' disabled type='text' />
         <br/>Balance: <label id='balance'></label>
+        <hr>
+        Send to: <input id='send_to' disabled type='text' /><br/>
+        Amount: <input id='amount' disabled type='text' /><br/>
+        <button id='send_button' disabled>Send</button><br/>
+        <div id='loading' style="display: none">
+            <img src="spinner.svg" />
+        </div>
+        <div id='transaction_info'></div>
 
         <script src='bundle.js'></script>
     </body>
