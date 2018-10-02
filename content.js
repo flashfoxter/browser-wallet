@@ -13,6 +13,7 @@ const ACCOUNT_SELECTOR = 'account';
 const BALANCE_LABEL_SELECTOR = 'balance';
 const CONNECTION_STATE_SELECTOR = 'connected';
 const TRANSACTION_INFO_SELECTOR = 'transaction_info';
+const LOADING_INDICATOR_SELECTOR = 'loading';
 
 
 
@@ -29,6 +30,7 @@ class Wallet {
         this.balanceLabel = document.getElementById(BALANCE_LABEL_SELECTOR);
         this.connectionStateElement = document.getElementById(CONNECTION_STATE_SELECTOR);
         this.transactionInfo = document.getElementById(TRANSACTION_INFO_SELECTOR);
+        this.loadingIndicator = document.getElementById(LOADING_INDICATOR_SELECTOR);
 
         this.provider = null;
         this.web3 = null;
@@ -151,13 +153,19 @@ class Wallet {
             value: this.web3.utils.toWei(this.amountInput.value, 'ether')
         };
 
+        this.sendButton.disabled = true;
+        this.loadingIndicator.style.display = 'block';
         try {
             const transactionInfo = await this.web3.eth.sendTransaction(transactionObject);
-            this.transactionInfo.innerText += `sent transaction with id: ${transactionInfo.transactionHash}`;
+            console.log('TransactionInfo:', transactionInfo);
+            this.transactionInfo.innerText += `sent transaction with id: ${transactionInfo.transactionHash}\n`;
         } catch (error) {
-            alert('error while send transaction');
+            console.log('TransactionError:', error);
+            this.transactionInfo.innerText += `error while send transaction\n`;
         }
-
+        this.loadingIndicator.style.display = 'none';
+        this.sendButton.disabled = false;
+        this.getBalance();
     }
 
 
