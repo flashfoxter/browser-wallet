@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <title>Browser Wallet</title>
+    </head>
+
+    <body>
+        Mnemonic: <input id='mnemonic' type='text' />
+        Network: <select id='network'>
+            <option value='rinkeby'>Rinkeby</option>
+            <option value='custom'>Custom</option>
+        </select>
+        <br/>Custom: <input id='custom' type='text' />
+        <button id='connect'>Connect</button> <label id='connected'>not connected</label>
+        <br/><br/>
+
+        Account: <input id='account' type='text' />
+        <br/>Balance: <label id='balance'></label>
+
+        <script src='bundle.js'></script>
+    </body>
+
+</html>
