@@ -6,9 +6,16 @@
   - TODO: send transaction
 
 ## Installation
+
 ### Software Prerequisites
   - Install [Node.js](https://nodejs.org/)
   - Run *npm install -g browserify*
   - Run *npm install*
+
 ### Building
-  - Run *browserify content.js -o bundle.js*
+  - Run *npm run build*
+
+### Deployment
+  - Open *chrome://extensions/* in Google Chrome
+  - Enable *Developer mode*
+  - Click *Load unpacked* and select project folder
