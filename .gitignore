@@ -1,7 +1,8 @@
 .settings
 node_modules
 
+.idea
 .project
 bundle.js
 npm-debug.log
-.idea
+package-lock.json
