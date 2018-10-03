@@ -4,7 +4,7 @@
   - Connection to node via RPC
   - Get balance
   - Send transactions
-  - View transactions history
+  - View transactions history (via [Etherscan](https://etherscan.io))
 
 ## Installation
 
