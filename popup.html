@@ -7,6 +7,9 @@
         Mnemonic: <input id='mnemonic' type='text' />
         Network: <select id='network'>
             <option value='rinkeby'>Rinkeby</option>
+            <option value='kovan'>Kovan</option>
+            <option value='ropsten'>Ropsten</option>
+            <option value='mainnet'>Etherium Main Network</option>
             <option value='custom'>Custom</option>
         </select>
         <br/>Custom: <input id='custom' type='text' />
@@ -19,10 +22,12 @@
         Send to: <input id='send_to' disabled type='text' /><br/>
         Amount: <input id='amount' disabled type='text' /><br/>
         <button id='send_button' disabled>Send</button><br/>
+        <button id='show_history' disabled>History</button><br/>
         <div id='loading' style="display: none">
             <img src="spinner.svg" />
         </div>
         <div id='transaction_info'></div>
+        <div id='history_table'></div>
 
         <script src='bundle.js'></script>
     </body>

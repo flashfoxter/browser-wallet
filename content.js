@@ -1,5 +1,7 @@
 const HDWalletProvider = require('truffle-hdwallet-provider');
 const Web3 = require('web3');
+const https = require('https');
+const urlParser = require('url');
 
 
 const MNEMONIC_ID = 'mnemonic';
@@ -14,6 +16,22 @@ const BALANCE_LABEL_SELECTOR = 'balance';
 const CONNECTION_STATE_SELECTOR = 'connected';
 const TRANSACTION_INFO_SELECTOR = 'transaction_info';
 const LOADING_INDICATOR_SELECTOR = 'loading';
+const HISTORY_BUTTON_SELECTOR = 'show_history';
+const HISTORY_TABLE_PLACE_SELECTOR = 'history_table';
+
+const networks = {
+    rinkeby: 'rinkeby',
+    ropsten: 'ropsten',
+    kovan: 'kovan',
+    mainnet: 'mainnet'
+};
+
+const etherscanNetToURLMap = {
+    rinkeby: 'https://rinkeby.etherscan.io/txs?a=',
+    ropsten: 'https://ropsten.etherscan.io/txs?a=',
+    kovan: 'https://kovan.etherscan.io/txs?a=',
+    mainnet: 'https://etherscan.io/txs?a='
+};
 
 
 
@@ -31,11 +49,14 @@ class Wallet {
         this.connectionStateElement = document.getElementById(CONNECTION_STATE_SELECTOR);
         this.transactionInfo = document.getElementById(TRANSACTION_INFO_SELECTOR);
         this.loadingIndicator = document.getElementById(LOADING_INDICATOR_SELECTOR);
+        this.historyButton = document.getElementById(HISTORY_BUTTON_SELECTOR);
+        this.placeForHistory = document.getElementById(HISTORY_TABLE_PLACE_SELECTOR);
 
         this.provider = null;
         this.web3 = null;
         this.isConnected = false;
         this.accountAddress = '';
+        this.networkName = '';
         this.ballance = 0;
         this.init();
         this.addButtonListeners();
@@ -62,13 +83,11 @@ class Wallet {
             }
             localStorage.setItem(MNEMONIC_ID, mnemonic);
 
-            const networks = {
-                rinkeby: 'ac236de4b58344d88976c12184cde32f'
-            };
             const network = this.networkSelector.value;
             let networkUri;
             if (networks[network]) {
-                networkUri = 'https://rinkeby.infura.io/v3/' + networks[network];
+                this.networkName = network;
+                networkUri = `https://${this.networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
             } else if (network == 'custom') {
                 networkUri = this.customInput.value;
                 localStorage.setItem(CUSTOM_ID, this.customInput.value);
@@ -94,6 +113,7 @@ class Wallet {
             this.web3 = null;
             this.isConnected = false;
             this.accountAddress = '';
+            this.networkName = '';
             this.updateAfterStateChanged();
         }
     }
@@ -108,6 +128,7 @@ class Wallet {
             this.sendToInput.disabled = false;
             this.sendButton.disabled = false;
             this.amountInput.disabled = false;
+            this.historyButton.disabled = false;
         } else {
             this.mnemonicInput.disabled = false;
             this.customInput.disabled = false;
@@ -117,6 +138,7 @@ class Wallet {
             this.sendToInput.disabled = true;
             this.sendButton.disabled = true;
             this.amountInput.disabled = true;
+            this.historyButton.disabled = true;
             this.accountInput.value = '';
             this.balanceLabel.innerHTML = '';
             this.ballance = 0;
@@ -168,15 +190,82 @@ class Wallet {
         this.getBalance();
     }
 
+    async getHistory(address, page) {
+        if (this.networkName) {
+            const url = etherscanNetToURLMap[this.networkName] + this.accountAddress.toLowerCase();
+            this.historyButton.disabled = true;
+            this.loadingIndicator.style.display = 'block';
+            const responseBody = await this.httpRequest(url, 'GET');
+            const historyEl = document.createElement('div');
+            historyEl.innerHTML = responseBody;
+            console.log(historyEl);
+            // find table element
+            const tableEl = historyEl.querySelector('#ContentPlaceHolder1_mainrow div div div table');
+            if (tableEl) {
+                // split all links from table
+                const aTagLists = tableEl.querySelectorAll('a[href]');
+                aTagLists.forEach((aTag) => {
+                    aTag.removeAttribute('href');
+                });
+
+                //clear tag
+                this.placeForHistory.innerHTML = '';
+                this.placeForHistory.appendChild(tableEl);
+            } else {
+                this.placeForHistory.innerHTML = 'can\'t get history';
+            }
+            this.loadingIndicator.style.display = 'none';
+            this.historyButton.disabled = false;
+        } else {
+            this.placeForHistory.innerHTML = 'Can\'t get history for Custom network';
+        }
+    }
+
 
     addButtonListeners() {
         const self = this;
-        this.connectButton.addEventListener("click", function() {
+        this.connectButton.addEventListener('click', function() {
             self.toggleConnectState();
         }, false);
-        this.sendButton.addEventListener("click", function() {
+        this.sendButton.addEventListener('click', function() {
             self.send();
         }, false);
+        this.historyButton.addEventListener('click', function() {
+            self.getHistory();
+        });
+    }
+
+    async httpRequest(url, method, data) {
+        return new Promise (function (resolve, reject) {
+            const reqInfo = urlParser.parse(url);
+            console.log('reqInfo', reqInfo);
+
+            var options = {
+                hostname: reqInfo.hostname,
+                port: reqInfo.port ? reqInfo.port : reqInfo.protocol === 'https:' ? 443 : 80,
+                path: reqInfo.path,
+                method: method ? method : 'GET'
+            };
+
+            var req = https.request(options, function (res) {
+                console.log('statusCode: ', res.statusCode);
+                console.log('headers: ', res.headers);
+
+                res.on('data', function (uint8ArrayData) {
+                    const str = String.fromCharCode.apply(null, uint8ArrayData);
+                    //console.log('body:', str);
+                    resolve(str);
+                });
+            });
+            if (data) {
+                req.write(data);
+            }
+            req.end();
+
+            req.on('error', function (e) {
+                reject(e);
+            });
+        });
     }
 
 }
