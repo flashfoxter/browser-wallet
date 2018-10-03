@@ -1,5 +1,5 @@
 # Google Chrome Ethereum Wallet
-  - Mnemonic pharase
+  - Mnemonic phrase ([BIP39](https://iancoleman.io/bip39/))
   - Connection to known Ethereum netwoks
   - Connection to node via RPC
   - Get balance
