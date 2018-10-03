@@ -4,6 +4,7 @@
   - Connection to node via RPC
   - Get balance
   - Send transactions
+  - View transactions history
 
 ## Installation
 
