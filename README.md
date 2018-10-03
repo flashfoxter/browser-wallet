@@ -1,9 +1,9 @@
 # Google Chrome Ethereum Wallet
   - Mnemonic pharase
-  - Connection to real and test Ethereum netwoks
+  - Connection to known Ethereum netwoks
   - Connection to node via RPC
   - Get balance
-  - TODO: send transaction
+  - Send transactions
 
 ## Installation
 
