@@ -37,20 +37,21 @@ const etherscanNetToURLMap = {
 
 class Wallet {
     constructor() {
-        this.mnemonicInput = document.getElementById(MNEMONIC_ID);
-        this.customInput = document.getElementById(CUSTOM_ID);
-        this.sendToInput = document.getElementById(SEND_TO_SELECTOR);
-        this.sendButton = document.getElementById(SEND_BUTTON_SELECTOR);
-        this.amountInput = document.getElementById(AMOUNT_SELECTOR);
-        this.connectButton = document.getElementById(CONNECT_BUTTON_SELECTOR);
-        this.networkSelector = document.getElementById(NETWORK_SELECT_SELECTOR);
-        this.accountInput = document.getElementById(ACCOUNT_SELECTOR);
-        this.balanceLabel = document.getElementById(BALANCE_LABEL_SELECTOR);
-        this.connectionStateElement = document.getElementById(CONNECTION_STATE_SELECTOR);
-        this.transactionInfo = document.getElementById(TRANSACTION_INFO_SELECTOR);
-        this.loadingIndicator = document.getElementById(LOADING_INDICATOR_SELECTOR);
-        this.historyButton = document.getElementById(HISTORY_BUTTON_SELECTOR);
-        this.placeForHistory = document.getElementById(HISTORY_TABLE_PLACE_SELECTOR);
+        const ge = document.getElementById;
+        this.mnemonicInput = ge(MNEMONIC_ID);
+        this.customInput = ge(CUSTOM_ID);
+        this.sendToInput = ge(SEND_TO_SELECTOR);
+        this.sendButton = ge(SEND_BUTTON_SELECTOR);
+        this.amountInput = ge(AMOUNT_SELECTOR);
+        this.connectButton = ge(CONNECT_BUTTON_SELECTOR);
+        this.networkSelector = ge(NETWORK_SELECT_SELECTOR);
+        this.accountInput = ge(ACCOUNT_SELECTOR);
+        this.balanceLabel = ge(BALANCE_LABEL_SELECTOR);
+        this.connectionStateElement = ge(CONNECTION_STATE_SELECTOR);
+        this.transactionInfo = ge(TRANSACTION_INFO_SELECTOR);
+        this.loadingIndicator = ge(LOADING_INDICATOR_SELECTOR);
+        this.historyButton = ge(HISTORY_BUTTON_SELECTOR);
+        this.placeForHistory = ge(HISTORY_TABLE_PLACE_SELECTOR);
 
         this.provider = null;
         this.web3 = null;
@@ -220,7 +221,6 @@ class Wallet {
             this.placeForHistory.innerHTML = 'Can\'t get history for Custom network';
         }
     }
-
 
     addButtonListeners() {
         const self = this;
