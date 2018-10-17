@@ -34,19 +34,6 @@ const accounts = (state = initialState, action) => {
                 );
 
             }
-        case ActionsList.CONNECT_TO_NETWORK:
-            return Object.assign({}, state, action.payload);
-        case ActionsList.DISCONNECT:
-            return Object.assign(
-                {},
-                state,
-                {
-                    isConnected: false,
-                    web3: null,
-                    balance: 0,
-                    accountAddress: ''
-                }
-            );
         default:
             return state
     }

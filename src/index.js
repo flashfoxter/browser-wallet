@@ -7,6 +7,10 @@ import reducer from './reducers';
 
 export const store = createStore(reducer);
 
+store.subscribe((inp) => {
+    console.log('store cnanged', inp);
+})
+
 render(
   <Provider store={store}>
     <App />

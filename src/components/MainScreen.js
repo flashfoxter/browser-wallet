@@ -86,13 +86,6 @@ class MainScreen extends Component {
                 container
                 justify='center'>
                 <MainHeader/>
-                Network: <select ref="networkSelect" disabled={this.props.wallet.isConnected}>
-                    <option value='rinkeby'>Rinkeby</option>
-                    <option value='kovan'>Kovan</option>
-                    <option value='ropsten'>Ropsten</option>
-                    <option value='mainnet'>Etherium Main Network</option>
-                    <option value='custom'>Custom</option>
-                </select>
                 <br/>Custom: <input ref="customConnectionInput" type='text' />
                 <br/><br/>
 

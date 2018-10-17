@@ -196,7 +196,7 @@ class SignUpMnemonicScreen extends Component {
                     open={this.state.openDialogue}
                     onClose={this.handleClose.bind(this)}
                     aria-labelledby="alert-dialog-title">
-                    <DialogTitle id="alert-dialog-title">You successfully  Signed Up</DialogTitle>
+                    <DialogTitle id="alert-dialog-title">You successfully Signed Up</DialogTitle>
                     <DialogActions>
                         <Button onClick={this.handleClose.bind(this)} color="primary" autoFocus>
                             OK
