@@ -131,7 +131,7 @@ const NetworkType = {
     custom: 'custom'
 }
 
-const NetworkItemsForSelect = new ArrayWithKeys('value', [
+const DEFAULT_NETWORK_ITEMS = [
     {
         value: networks.rinkeby,
         label: 'Rinkeby Test Network',
@@ -152,21 +152,44 @@ const NetworkItemsForSelect = new ArrayWithKeys('value', [
         label: 'Main Ethereum Network',
         type: NetworkType.basic
     }
-]);
+];
 
 class MainHeader extends Component {
     constructor (props) {
         super(props);
 
+        const networksItems = this.props.wallet.networksItems;
+        this.networkItemsForSelect = null;
+        const networksListUpdate = this.onNetworkListUpdate.bind(this);
+
+        if (networksItems && networksItems.length) {
+            this.networkItemsForSelect = new ArrayWithKeys('value', networksItems, networksListUpdate);
+        } else {
+
+            this.networkItemsForSelect = new ArrayWithKeys('value', DEFAULT_NETWORK_ITEMS, networksListUpdate);
+        }
+
         this.state = {
-            networkName: 'rinkeby',
+            networkName: this.props.wallet.networkName,
             menuOpen: false,
             customNetwork: null
         };
+
+    }
+
+    onNetworkListUpdate(networkItems) {
+        console.log('update net Items', networkItems, this.props.pageActions.updateNetworkItems);
+        this.props.pageActions.updateNetworkItems(networkItems);
+    }
+
+    onNetworkChange(networkName) {
+        this.props.pageActions.changeNetwork(networkName);
+        this.props.pageActions.getBalance();
     }
 
     handleClickGoMain = () => {
         this.props.pageActions.changeScreen(this.props.screenName);
+
     };
 
     handleOnOpen(event) {
@@ -188,10 +211,9 @@ class MainHeader extends Component {
         if (event.target.value === 'custom') {
             this.setState({customNetwork: ''});
 
-        } else if(event.target.value === 'customInput'){
-
-        } else {
+        } else if(event.target.value !== 'customInput'){
             this.setState({networkName: event.target.value, menuOpen: false});
+            this.onNetworkChange(event.target.value);
         }
         console.log('handleChange', event.target.name, event.target.value, this);
     }
@@ -199,9 +221,11 @@ class MainHeader extends Component {
     networkRenderValue(value) {
         const {classes} = this.props;
 
-        const index = NetworkItemsForSelect.getIndexByKey(value);
+        const index = this.networkItemsForSelect.getIndexByKey(value);
         const color = IconDiscColors[index % IconDiscColors.length];
-        const itemDesc = NetworkItemsForSelect.getElementByKey(value);
+        const itemDesc = this.networkItemsForSelect.getElementByKey(value);
+
+        console.log('val', value, itemDesc, this.networkItemsForSelect.arr);
 
         return   (<span><span className={classes.iconContainer} style={{color}}>
                         <Lens color='inherit' fontSize='inherit'/>
@@ -213,9 +237,10 @@ class MainHeader extends Component {
         event.stopPropagation();
         let newValue = this.state.networkName;
         if (itemDesc.value === this.state.networkName) {
-            newValue = NetworkItemsForSelect.arr[0].value;
+            newValue = this.networkItemsForSelect.arr[0].value;
+            this.onNetworkChange(newValue);
         }
-        NetworkItemsForSelect.removeByKey(itemDesc.value);
+        this.networkItemsForSelect.removeByKey(itemDesc.value);
         this.setState({
             networkName: newValue,
         });
@@ -229,15 +254,16 @@ class MainHeader extends Component {
                 type: NetworkType.custom
             }
             try {
-                NetworkItemsForSelect.addItem(networkObj);
+                this.networkItemsForSelect.addItem(networkObj);
             } catch(e) {
-                console.log('Network already in list');
+                console.log('Network already in list', e);
             }
             this.setState({
                 networkName: networkObj.value,
                 menuOpen: false,
                 customNetwork: null
             });
+            this.onNetworkChange(networkObj.value);
         } else {
             this.setState({
                 menuOpen: false,
@@ -250,7 +276,7 @@ class MainHeader extends Component {
         const {classes} = this.props;
 
 
-        const menuItems = NetworkItemsForSelect.map((itemDesc, index) => {
+        const menuItems = this.networkItemsForSelect.map((itemDesc, index) => {
             const color = IconDiscColors[index % IconDiscColors.length];
 
             let deleteIcon = null;
@@ -293,7 +319,7 @@ class MainHeader extends Component {
                           style={{fontSize: '14px', paddingLeft: '8px'}}>
 
                     <span className={classes.iconContainer}
-                          style={{color: IconDiscColors[NetworkItemsForSelect.length % IconDiscColors.length]}}>
+                          style={{color: IconDiscColors[this.networkItemsForSelect.length % IconDiscColors.length]}}>
                         <Lens color='inherit' fontSize='inherit'/>
                     </span>
 
@@ -387,6 +413,17 @@ MainHeader.propTypes = {
 };
 
 /**
+ * Binding state
+ * @param  {obj}
+ * @return {obj}
+ */
+function mapStateToProps(state) {
+    return {
+        wallet: state.wallet
+    }
+}
+
+/**
  * Binding actions
  * @param  {function}
  */
@@ -397,6 +434,6 @@ function mapDispatchToProps(dispatch) {
 }
 
 export default withStyles(styles)(connect(
-    null,
+    mapStateToProps,
     mapDispatchToProps
 )(MainHeader))

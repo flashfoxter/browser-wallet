@@ -77,7 +77,7 @@ class SignUpMnemonicScreen extends Component {
             };
 
             this.setState({openDialogue: true});
-            console.log('isValid Form', payload);
+            console.log('isValid Form', this.payload);
         } else {
             const payload = {
                 mnemonic: this.fields.mnemonic.error,

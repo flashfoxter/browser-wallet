@@ -1,7 +1,12 @@
 export class ArrayWithKeys {
-    constructor(keyAttr, initialValue = []) {
+    constructor(keyAttr, initialValue = [], onUpdate) {
         this.keyAttr = keyAttr;
         this.keyValues = {};
+        if (typeof onUpdate === 'function') {
+            this.onUpdate = onUpdate;
+        } else {
+            this.onUpdate = () => {};
+        }
         this.arr = initialValue.map(item => {
             const key = item[this.keyAttr];
             if (!key) {
@@ -26,6 +31,7 @@ export class ArrayWithKeys {
         const obj = Object.assign({}, item);
         this.keyValues[key] = obj;
         this.arr.push(obj);
+        this.onUpdate(this.arr);
         return obj;
     }
 
@@ -43,6 +49,7 @@ export class ArrayWithKeys {
                 return item[this.keyAttr] !== key;
             })
             delete this.keyValues[key];
+            this.onUpdate(this.arr);
             return true;
         }
         return false;

@@ -1,4 +1,5 @@
 import {ActionsList} from "../actions";
+import {createStoredReducer} from '../models/StoredReducer';
 
 export const ScreenNames = {
     'SIGN_IN_SCREEN': 'SIGN_IN_SCREEN',
@@ -8,7 +9,7 @@ export const ScreenNames = {
     'MAIN_SCREEN': 'MAIN_SCREEN'
 };
 
-const screen = (state = ScreenNames.SIGN_IN_SCREEN, action) => {
+const screen = createStoredReducer((state, action) => {
     switch (action.type) {
         case ActionsList.SIGN_UP:
         case ActionsList.SIGN_IN:
@@ -21,6 +22,6 @@ const screen = (state = ScreenNames.SIGN_IN_SCREEN, action) => {
         default:
             return state
     }
-};
+}, 'screen', ScreenNames.SIGN_IN_SCREEN);
 
 export default screen;

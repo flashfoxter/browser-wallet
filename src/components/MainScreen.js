@@ -13,6 +13,9 @@ import AuthHelper from "../helpers/AuthHelper";
 import NetHelper from "../helpers/NetHelper";
 import Grid from "@material-ui/core/Grid";
 import MainHeader from "./MainHeader";
+import AccountSelector from './AccountSelector'
+import Typography from '@material-ui/core/Typography/Typography'
+import { mainColor } from './StyledComponents'
 
 const CUSTOM_ID = 'custom';
 
@@ -20,7 +23,6 @@ class MainScreen extends Component {
     constructor (props) {
         super(props);
 
-        // NetHelper.getBalance('0xc94770007dda54cF92009BFF0dE90c06F603a09f','mainnet');
         console.log('props:', props);
         this.props.pageActions.getBalance();
     }
@@ -37,7 +39,6 @@ class MainScreen extends Component {
                 alert('mnemonic is not valid');
                 // return;
             }
-            localStorage.setItem(MNEMONIC_ID, mnemonic);
 
             console.log('addresses', AuthHelper.getAddressesFromMnemonic('mountains supernatural bird...', 10));
 
@@ -80,17 +81,34 @@ class MainScreen extends Component {
     }
 
     render() {
+        const {currentAccounts, accountIndex} = this.props.accounts;
 
         return (
             <Grid
                 container
                 justify='center'>
                 <MainHeader/>
-                <br/>Custom: <input ref="customConnectionInput" type='text' />
-                <br/><br/>
+                <Grid
+                    container
+                    style={{ padding: '12px', borderBottom: '1px solid rgba(0, 0, 0, 0.1)' }}
+                    justify='center'>
+                    <AccountSelector/>
+                </Grid>
+                <Grid
+                    container
+                    style={{ padding: '16px' }}
+                    justify='center'>
+                    <img src='./icons/eth_logo.svg' width='56px' height='56px'/>
+                </Grid>
+                <Grid
+                    container
+                    justify='center'>
+                    <Typography style={{fontSize: '38px', color: mainColor}}>
+                        {this.props.wallet.balance}
+                        <span style={{color: 'rgba(0, 157, 139, 0.5)'}}>ETH</span>
+                    </Typography>
+                </Grid>
 
-                Account: <input value={this.props.wallet.accountAddress} disabled type='text' />
-                <br/>Balance: <label>{this.props.wallet.balance}</label>
                 <hr />
                 <Transactions/>
             </Grid>
@@ -112,7 +130,8 @@ MainScreen.propTypes = {
  */
 function mapStateToProps(state) {
     return {
-        wallet: state.wallet
+        wallet: state.wallet,
+        accounts: state.accounts
     }
 }
 

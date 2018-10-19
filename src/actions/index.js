@@ -1,11 +1,15 @@
 import {store} from '../index';
 import NetHelper from "../helpers/NetHelper";
+import { networks } from '../constants/networks'
 
 export const ActionsList = {
     'CONNECT_TO_NETWORK': 'CONNECT_TO_NETWORK',
     'DISCONNECT': 'DISCONNECT',
     'GET_BALANCE': 'GET_BALANCE',
     'UPDATE_BALANCE_CALLBACK': 'UPDATE_BALANCE_CALLBACK',
+    'UPDATE_NETWORK_ITEMS': 'UPDATE_NETWORK_ITEMS',
+    'CHANGE_NETWORK': 'CHANGE_NETWORK',
+    'CHANGE_ACCOUNT': 'CHANGE_ACCOUNT',
     'SEND_TRANSACTION': 'SEND_TRANSACTION',
     'GET_HISTORY': 'GET_HISTORY',
     'SIGN_UP': 'SIGN_UP',
@@ -19,6 +23,18 @@ export const PageActions = {
     }),
     connectToNetwork: (payload) => ({
         type: ActionsList.CONNECT_TO_NETWORK,
+        payload
+    }),
+    updateNetworkItems: (payload) => ({
+        type: ActionsList.UPDATE_NETWORK_ITEMS,
+        payload
+    }),
+    changeNetwork: (payload) => ({
+        type: ActionsList.CHANGE_NETWORK,
+        payload
+    }),
+    changeAccount: (payload) => ({
+        type: ActionsList.CHANGE_ACCOUNT,
         payload
     }),
     disconnect: () => ({
@@ -46,7 +62,12 @@ export const PageActions = {
             const balance = parseFloat(result);
             store.dispatch(PageActions.updateBalanceCallback({balance}));
         };
-        getBalanceRequest();
+
+        console.log('getBalance', networks[networkName]);
+        if (networks[networkName]) {
+            getBalanceRequest();
+        }
+
         return {type: ActionsList.GET_BALANCE}
     }
 };

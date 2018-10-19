@@ -1,5 +1,6 @@
 import {ActionsList} from '../actions';
 import AuthHelper from '../helpers/AuthHelper';
+import {createStoredReducer} from '../models/StoredReducer';
 
 const initialState = {
     currentLogin: '',
@@ -7,8 +8,12 @@ const initialState = {
     accountIndex: 0
 };
 
-const accounts = (state = initialState, action) => {
+const accounts = createStoredReducer((state, action) => {
     switch (action.type) {
+        case ActionsList.CHANGE_ACCOUNT:
+            const {accountIndex} = action.payload;
+            return Object.assign({}, state, {accountIndex});
+
         case ActionsList.SIGN_UP:
             const {login, password, mnemonic, accounts} = action.payload;
             AuthHelper.addUserToStorage(login, password, mnemonic);
@@ -37,6 +42,6 @@ const accounts = (state = initialState, action) => {
         default:
             return state
     }
-}
+}, 'accounts', initialState);
 
 export default accounts
