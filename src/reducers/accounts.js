@@ -26,6 +26,16 @@ const accounts = createStoredReducer((state, action) => {
                     accountIndex: 0
                 }
             );
+        case ActionsList.LOG_OUT:
+            return Object.assign(
+                {},
+                state,
+                {
+                    currentLogin: '',
+                    currentAccounts: [],
+                    accountIndex: 0
+                }
+            );
         case ActionsList.SIGN_IN: {
                 const {login, accounts} = action.payload;
                 return Object.assign(

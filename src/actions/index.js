@@ -13,6 +13,7 @@ export const ActionsList = {
     'SEND_TRANSACTION': 'SEND_TRANSACTION',
     'GET_HISTORY': 'GET_HISTORY',
     'SIGN_UP': 'SIGN_UP',
+    'LOG_OUT': 'LOG_OUT',
     'SIGN_IN': 'SIGN_IN',
     'CHANGE_SCREEN': 'CHANGE_SCREEN'
 };
@@ -47,6 +48,9 @@ export const PageActions = {
     signUp: (payload) => ({
         type: ActionsList.SIGN_UP,
         payload
+    }),
+    logOut: () => ({
+        type: ActionsList.LOG_OUT
     }),
     signIn: (payload) => ({
         type: ActionsList.SIGN_IN,

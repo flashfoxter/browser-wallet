@@ -1,4 +1,5 @@
 import React, {Component} from 'react'
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -23,10 +24,12 @@ import Divider from '@material-ui/core/Divider';
 import Lens from '@material-ui/icons/Lens';
 import Add from '@material-ui/icons/Add';
 import Delete from '@material-ui/icons/Delete';
+import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
 import Done from '@material-ui/icons/Done';
 import Exit from '@material-ui/icons/ExitToApp';
 import { ArrayWithKeys } from '../models/ArrayWithKeys'
 import Copy from './icons/Copy'
+import Popover from '@material-ui/core/Popover/Popover'
 
 const styles = theme => ({
     container: {
@@ -35,35 +38,56 @@ const styles = theme => ({
     },
     selectInput: {
         width: '234px',
-        height: '25px'
+        height: '25px',
+    },
+    selectRoot: {
+        display: 'flex',
+        justifyContent: 'center'
     },
     filledInput: {
-        padding: '0px 0px 0px 8px',
+        padding: '0',
         fontSize: '14px',
-        display: 'flex'
+        display: 'inline-block'
     },
     selectInputRoot: {
         '&:focus': {
             background: 'inherit'
         }
     },
+    selectRenderValue: {
+        width: '234px',
+    },
     selectIcon: {
         //top: 'calc(50% - 12px)',
         //right: -25,
         height: '25px',
-        display: 'inline-block',
+        display: 'none',
         position: 'relative',
         lineHeight: '1em',
         padding: '0',
+    },
+    dropDownIcon: {
+        fontSize: '22px',
+        display: 'inline-block',
+        lineHeight: '1em',
+        color: '#434343',
+        marginTop: '3px',
+        overflow: 'visible',
+        width: '1px'
     },
     iconContainer: {
         fontSize: '12px',
         marginLeft: '5px',
         verticalAlign: 'middle',
         display: 'inline-block',
-        lineHeight: '1em'
+        lineHeight: '1em',
+        cursor: 'pointer'
     },
     menuItem: {
+        position: 'relative',
+        '&:focus': {
+            outline: 'none'
+        },
         '&:hover': {
             backgroundColor: 'rgba(0,0,0,0.03)'
         },
@@ -82,12 +106,19 @@ const styles = theme => ({
         lineHeight: '1em',
         position: 'absolute',
         right: '20px',
-        color: '#009d8b'
+        color: '#009d8b',
+        top: '12px'
     },
     accountAddress: {
-        color: 'rgba(0, 0, 0, 0.5)'
-    }
+        color: 'rgba(0, 0, 0, 0.5)',
+        width: '234px'
+    },
+    typography: {
+        margin: theme.spacing.unit * 2,
+    },
 });
+
+const POPOVER_TIMEOUT = 3000;
 
 class AccountSelector extends Component {
     constructor (props) {
@@ -95,10 +126,15 @@ class AccountSelector extends Component {
 
         this.state = {
             menuOpen: false,
+            selectElement: null,
+            popoverOpen: false,
+            popoverAnchorEl: null
         };
+        this.selectedElement = null;
     }
 
     handleOnOpen(event) {
+        //console.log('menu element: ', event.target, this.selectedElement, ReactDOM.findDOMNode(this.selectedElement));
         this.setState({menuOpen: true});
     }
 
@@ -118,13 +154,42 @@ class AccountSelector extends Component {
         this.props.pageActions.getBalance();
     }
 
+    copyAddress(event) {
+        const {currentAccounts, accountIndex} = this.props.accounts;
+        const accountAddress = currentAccounts[accountIndex];
+        const popoverAnchorEl = event.target;
+        navigator.clipboard.writeText(accountAddress)
+            .then(() => {
+                this.setState({
+                    popoverOpen: true,
+                    popoverAnchorEl
+                });
+                setTimeout(() => {
+                    this.setState({
+                        popoverOpen: false,
+                        popoverAnchorEl: null
+                    });
+                }, POPOVER_TIMEOUT)
+            })
+            .catch(err => {
+                console.log('cant copy add to clipboard', err);
+            });
+    }
+
     renderValue(value) {
         const {classes} = this.props;
         const {currentAccounts} = this.props.accounts;
 
         const accountAddress = currentAccounts[value];
 
-        return (<Typography variant='h5' >Account{value ? value : ''}</Typography>)
+        return (
+            <Grid container justify='center' className={classes.selectRenderValue}>
+                <Typography variant='h5' >Account{value ? value : ''}</Typography>
+                <span className={classes.dropDownIcon}>
+                    <ArrowDropDown color='inherit' fontSize='inherit'/>
+                </span>
+            </Grid>
+        );
     }
 
     render() {
@@ -143,7 +208,7 @@ class AccountSelector extends Component {
             }
 
             return (
-                <Grid key={index} value={index}>
+                <Grid key={index} value={index} className={classes.menuItem}>
                     <Grid container
                           justify='center'>
                         <Typography variant='h5' >Account{index ? index : ''}</Typography>
@@ -176,6 +241,7 @@ class AccountSelector extends Component {
                         renderValue={this.renderValue.bind(this)}
                         classes={{
                             selectMenu: classes.filledInput,
+                            root: classes.selectRoot,
                             select: classes.selectInputRoot,
                             icon: classes.selectIcon
                         }}
@@ -189,9 +255,25 @@ class AccountSelector extends Component {
                       justify='center'>
                     <Typography noWrap={true} style={{width: '205px', fontSize: '12px'}}
                                 color='inherit'>{accountAddress}</Typography>
-                    <span className={classes.iconContainer}>
+                    <span className={classes.iconContainer}
+                        onClick={this.copyAddress.bind(this)}>
                         <Copy color='inherit' fontSize='inherit'/>
                     </span>
+                    <Popover
+                        id="simple-popper"
+                        open={this.state.popoverOpen}
+                        anchorEl={this.state.popoverAnchorEl}
+                        anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'center',
+                        }}
+                        transformOrigin={{
+                            vertical: 'top',
+                            horizontal: 'center',
+                        }}
+                    >
+                        <Typography className={classes.typography}>Address was copied to clipboard</Typography>
+                    </Popover>
                 </Grid>
             </Grid>
 

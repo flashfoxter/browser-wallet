@@ -21,8 +21,8 @@ import Button from '@material-ui/core/Button';
 import {bigElementWidth} from "./StyledComponents";
 import Typography from "@material-ui/core/Typography";
 import {ScreenNames} from "../reducers/screen";
+import GoMainHeader from './GoMainHeader'
 
-// f7
 const styles = theme => ({
     container: {
         display: 'flex',
@@ -32,69 +32,74 @@ const styles = theme => ({
 
 
 const FieldNames = {
-    login: 'login',
+    address: 'address',
+    amount: 'amount',
     password: 'password'
 };
 
-class SignInScreen extends Component {
+class SendScreen extends Component {
     constructor (props) {
         super(props);
 
         this.state = {
-            login: {value: '', error: ''},
+            address: {value: '', error: ''},
+            amount: {value: '', error: ''},
             password: {value: '', error: ''},
             showPassword: false
         };
 
         this.fields = {
-            login: new InputFieldInState({}, FieldNames.login, this),
+            address: new InputFieldInState({}, FieldNames.address, this),
+            amount: new InputFieldInState({}, FieldNames.amount, this),
             password: new InputFieldInState({}, FieldNames.password, this)
         };
-        console.log('props:', props);
     }
 
-    signIn(event) {
-        event.preventDefault();
-        let isValid = true;
-        const login = this.state.login.value;
-        const password = this.state.password.value;
+    async sendTo(event) {
+        //connect then send
+        const sendButton = event.target;
+        const toAddress = this.refs.sendTo.value;
+        const {web3, balance, accountAddress} = this.props.wallet;
 
-        if (!login) {
-            this.fields.login.error = 'Login can\'t be empty';
-            isValid = false;
+        if (!web3.utils.isAddress(toAddress)) {
+            alert('Destination address is not valid');
+            return;
+        }
+        const amount = parseFloat(this.refs.amount.value);
+        if (Number.isNaN(amount)) {
+            alert('incorrect amount');
+            return;
+        } else if (amount <= 0) {
+            alert('Amount mast be greater then 0');
+            return;
+        } else if (amount > balance) {
+            alert('Amount mast be less then you have');
+            return;
         }
 
-        if (!password) {
-            this.fields.password.error = 'Password can\'t be empty';
-            isValid = false;
+        const transactionObject = {
+            from: accountAddress,
+            to: toAddress,
+            value: web3.utils.toWei(this.refs.amount.value, 'ether')
+        };
+
+        sendButton.disabled = true;
+        this.setState({showLoadingIndicator: true});
+        try {
+            const transactionInfo = await web3.eth.sendTransaction(transactionObject);
+            console.log('TransactionInfo:', transactionInfo);
+            this.setState({transactions: this.state.transactions.concat([transactionInfo])});
+            // this.transactionInfo.innerText += `sent transaction with id: ${transactionInfo.transactionHash}\n`;
+        } catch (error) {
+            console.log('TransactionError:', error);
+            const errorData = {key: Math.round((new Date()).getTime() / 1000), error};
+            this.setState({transactions: this.state.transactions.concat([errorData])});
+            // this.transactionInfo.innerText += `error while send transaction\n`;
         }
+        this.setState({showLoadingIndicator: false});
+        sendButton.disabled = false;
 
-        if (isValid) {
-            const data = AuthHelper.getUserDataFormStorage(login, password);
-
-            console.log('isValid Form data is:', data);
-            if (data) {
-                // do login
-                // get accounts
-                let accounts = [];
-                if (typeof data === 'string') {
-                    accounts = AuthHelper.getAddressesFromMnemonic(data, 10);
-                }
-                this.props.pageActions.signIn({
-                    login,
-                    accounts
-                });
-            } else {
-                this.fields.login.error = 'Wrong login or password';
-            }
-        } else {
-            const payload = {
-                login: this.fields.login.error,
-                password: this.fields.password.error
-            };
-
-            console.log('inValid Form', payload);
-        }
+        this.props.pageActions.getBalance();
     }
 
     setValue(event, fieldName) {
@@ -113,19 +118,19 @@ class SignInScreen extends Component {
             <Grid
                 container
                 justify='center'>
-                <form onSubmit={this.signIn.bind(this)}>
+                <GoMainHeader screenName={ScreenNames.MAIN_SCREEN}>
+                    Send
+                </GoMainHeader>
+                <form onSubmit={this.sendTo.bind(this)}>
                     <Grid
                         container
-                        style={{ padding: '39px 0 14px 0' }}
+                        style={{ paddingTop: '32px' }}
                         justify='center'>
-                        <img src='./icons/ic-wallet-logo.svg' style={{width: 72, height: 72}}/>
-                    </Grid>
-                    <Grid
-                        container
-                        justify='center'>
-                        <Typography variant="h6" color='secondary'>
-                            Tiger Ethereum Wallet
-                        </Typography>
+                        <Button variant='contained'
+                                color='secondary'
+                                size='large'
+                                type='submit'
+                                onClick={this.sendTo.bind(this)}>Log In</Button>
                     </Grid>
                     <Grid
                         container
@@ -133,13 +138,30 @@ class SignInScreen extends Component {
                         justify='center'>
                         <FormControl
                             variant="filled"
-                            error={!!this.state.login.error}>
-                            <InputLabel htmlFor="component-filled">Login</InputLabel>
+                            error={!!this.state.address.error}>
+                            <InputLabel htmlFor="component-filled">Send to</InputLabel>
                             <FilledInput id="component-filled"
-                                         value={this.state.login.value}
-                                         onChange={event => this.setValue(event, FieldNames.login)} />
-                            {this.state.login.error
-                                ? <FormHelperText id="component-error-text">{this.state.login.error}</FormHelperText>
+                                         value={this.state.address.value}
+                                         onChange={event => this.setValue(event, FieldNames.address)} />
+                            {this.state.address.error
+                                ? <FormHelperText id="component-error-text">{this.state.address.error}</FormHelperText>
+                                : null
+                            }
+                        </FormControl>
+                    </Grid>
+                    <Grid
+                        container
+                        style={{ paddingTop: '32px' }}
+                        justify='center'>
+                        <FormControl
+                            variant="filled"
+                            error={!!this.state.amount.error}>
+                            <InputLabel htmlFor="component-filled">Amount</InputLabel>
+                            <FilledInput id="component-filled"
+                                         value={this.state.amount.value}
+                                         onChange={event => this.setValue(event, FieldNames.amount)} />
+                            {this.state.amount.error
+                                ? <FormHelperText id="component-error-text">{this.state.amount.error}</FormHelperText>
                                 : null
                             }
                         </FormControl>
@@ -176,14 +198,7 @@ class SignInScreen extends Component {
                                 color='secondary'
                                 size='large'
                                 type='submit'
-                                onClick={this.signIn.bind(this)}>Log In</Button>
-                    </Grid>
-                    <Grid
-                        container
-                        style={{ paddingTop: '24px' }}
-                        size='large'
-                        justify='center'>
-                        <Button color='secondary' onClick={this.props.pageActions.changeScreen.bind(this, ScreenNames.SIGN_UP_CHOOSE_TYPE)}>Sign Up</Button>
+                                onClick={this.sendTo.bind(this)}>Send</Button>
                     </Grid>
                 </form>
             </Grid>
@@ -194,7 +209,7 @@ class SignInScreen extends Component {
  * Set data types for App
  * @type {Object}
  */
-SignInScreen.propTypes = {
+SendScreen.propTypes = {
     accounts: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired
 };
@@ -223,4 +238,4 @@ function mapDispatchToProps(dispatch) {
 export default withStyles(styles)(connect(
     mapStateToProps,
     mapDispatchToProps
-)(SignInScreen))
+)(SendScreen))

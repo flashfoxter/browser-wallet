@@ -21,6 +21,8 @@ const wallet = createStoredReducer((state, action) => {
             return Object.assign({}, state, {networksItems: action.payload});
         case ActionsList.CHANGE_NETWORK:
             return Object.assign({}, state, {networkName: action.payload});
+        case ActionsList.LOG_OUT:
+            return Object.assign({}, state, {balance: 0});
         case ActionsList.DISCONNECT:
             return Object.assign(
                     {},

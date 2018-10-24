@@ -187,8 +187,8 @@ class MainHeader extends Component {
         this.props.pageActions.getBalance();
     }
 
-    handleClickGoMain = () => {
-        this.props.pageActions.changeScreen(this.props.screenName);
+    handleClickGoSignIn = () => {
+        this.props.pageActions.logOut();
 
     };
 
@@ -215,7 +215,6 @@ class MainHeader extends Component {
             this.setState({networkName: event.target.value, menuOpen: false});
             this.onNetworkChange(event.target.value);
         }
-        console.log('handleChange', event.target.name, event.target.value, this);
     }
 
     networkRenderValue(value) {
@@ -224,8 +223,6 @@ class MainHeader extends Component {
         const index = this.networkItemsForSelect.getIndexByKey(value);
         const color = IconDiscColors[index % IconDiscColors.length];
         const itemDesc = this.networkItemsForSelect.getElementByKey(value);
-
-        console.log('val', value, itemDesc, this.networkItemsForSelect.arr);
 
         return   (<span><span className={classes.iconContainer} style={{color}}>
                         <Lens color='inherit' fontSize='inherit'/>
@@ -394,7 +391,7 @@ class MainHeader extends Component {
                         color='primary'
                         aria-label="Close"
                         disableRipple
-                        onClick={this.handleClickGoMain}>
+                        onClick={this.handleClickGoSignIn.bind(this)}>
 
                         <Exit/>
                     </IconButton>

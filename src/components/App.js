@@ -10,6 +10,7 @@ import SignInScreen from "./SignInScreen";
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import {theme} from './StyledComponents';
 import SignUpChooseType from "./SignUpChooseType";
+import SendScreen from './SendScreen'
 
 
 class App extends Component {
@@ -31,6 +32,8 @@ class App extends Component {
             screenComponent = <SignInScreen/>
         } else if (screen === ScreenNames.SIGN_UP_CHOOSE_TYPE) {
             screenComponent = <SignUpChooseType/>
+        } else if (screen === ScreenNames.SEND_SCREEN) {
+            screenComponent = <SendScreen/>
         }
         return (
             <div className="app">

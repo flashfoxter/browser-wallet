@@ -4,7 +4,7 @@ import FilledInput from '@material-ui/core/FilledInput';
 export const mainBorderRadius = '8px';
 export const mainColor = '#009d8b';
 const mainBackgroundColor = 'rgba(0, 0, 0, 0.03)';
-const mainLightTextColor = 'rgba(0, 0, 0, 0.5)';
+export const mainLightTextColor = 'rgba(0, 0, 0, 0.5)';
 export const bigElementWidth = '296px';
 export const bigElementHeight = '56px';
 export const smallElementWidth = '96px';
@@ -134,7 +134,7 @@ export const theme = createMuiTheme({
                 padding: '0',
                 minWidth: smallElementWidth,
                 minHeight: smallElementHeight,
-                fontSize: '16px'
+                fontSize: '14px'
             },
         },
         MuiTouchRipple: {

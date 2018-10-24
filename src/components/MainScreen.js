@@ -16,6 +16,8 @@ import MainHeader from "./MainHeader";
 import AccountSelector from './AccountSelector'
 import Typography from '@material-ui/core/Typography/Typography'
 import { mainColor } from './StyledComponents'
+import Button from '@material-ui/core/Button'
+import { ScreenNames } from '../reducers/screen'
 
 const CUSTOM_ID = 'custom';
 
@@ -23,7 +25,6 @@ class MainScreen extends Component {
     constructor (props) {
         super(props);
 
-        console.log('props:', props);
         this.props.pageActions.getBalance();
     }
 
@@ -108,8 +109,33 @@ class MainScreen extends Component {
                         <span style={{color: 'rgba(0, 157, 139, 0.5)'}}>ETH</span>
                     </Typography>
                 </Grid>
-
-                <hr />
+                <Grid container style={{
+                    paddingTop: '16px',
+                    paddingBottom: '24px',
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.1)'
+                }}>
+                    <Grid item xs={6} style={{paddingRight: '12px'}}
+                              container
+                              alignItems='center'
+                              justify='flex-end'>
+                        <Button variant='contained'
+                                color='secondary'
+                                onClick={this.props.pageActions.changeScreen.bind(this, ScreenNames.SEND_SCREEN)}
+                                size='small'
+                                type='submit'
+                                >Send</Button>
+                    </Grid>
+                    <Grid item xs={6} style={{paddingLeft: '12px'}}
+                          container
+                          alignItems='center'
+                          justify='flex-start'>
+                        <Button variant='contained'
+                                color='secondary'
+                                size='small'
+                                type='submit'
+                                >Contract</Button>
+                    </Grid>
+                </Grid>
                 <Transactions/>
             </Grid>
         )
