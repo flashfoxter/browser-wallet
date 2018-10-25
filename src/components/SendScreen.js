@@ -151,6 +151,15 @@ class SendScreen extends Component {
                     </Grid>
                     <Grid
                         container
+                        style={{ paddingTop: '0px' }}
+                        justify='center'>
+                        <div>
+                            <span>Balance:</span>
+                            <span>{this.props.wallet.balance}</span>
+                        </div>
+                    </Grid>
+                    <Grid
+                        container
                         style={{ paddingTop: '32px' }}
                         justify='center'>
                         <FormControl
