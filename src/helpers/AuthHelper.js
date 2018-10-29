@@ -31,6 +31,10 @@ export default {
         return null;
     },
 
+    checkExistsUserInStorage(login) {
+        return !!localStorage.getItem(USER_PREFIX + login.toLowerCase());
+    },
+
     getAddressesFromMnemonic(mnemonic, quantity) {
         const hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
         const wallet_hdpath = "m/44'/60'/0'/0/";

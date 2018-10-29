@@ -58,6 +58,12 @@ class SignUpMnemonicScreen extends Component {
         if (!this.state.login.value) {
             this.fields.login.error = 'Login can\'t be empty';
             isValid = false;
+        } else {
+            const isExists = AuthHelper.checkExistsUserInStorage(this.state.login.value);
+            if (isExists) {
+                this.fields.login.error = 'Login already used';
+                isValid = false;
+            }
         }
 
         if (!this.state.password.value) {

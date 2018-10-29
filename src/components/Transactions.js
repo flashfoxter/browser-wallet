@@ -160,66 +160,74 @@ class Transactions extends Component {
             const url = etherscanNetToURLMap[networkName] + accountAddress.toLowerCase();
             this.setState({showLoadingIndicator: true});
 
-            const responseBody = await NetHelper.httpRequest(url, 'GET');
-            const historyEl = document.createElement('div');
-            historyEl.innerHTML = responseBody;
+            try {
+                const responseBody = await NetHelper.httpRequest(url, 'GET');
+                const historyEl = document.createElement('div');
+                historyEl.innerHTML = responseBody;
 
-            // find table element
-            const tableEl = historyEl.querySelector('#ContentPlaceHolder1_mainrow div div div table');
-            if (tableEl) {
-                //collecting data
-                const trElements = tableEl.querySelectorAll('tbody tr');
-                if (trElements && trElements.length) {
-                    const noMatchesElement = trElements[0].querySelector('td[colspan="6"]');
-                    if (!noMatchesElement) {
-                        trElements.forEach(trElement =>{
-                            const transactionInfo = {};
-                            transactionInfo.transactionHash = trElement.querySelector('td:nth-child(1)').innerText;
-                            const dataSpan = trElement.querySelector('td:nth-child(3) span');
+                // find table element
+                const tableEl = historyEl.querySelector('#ContentPlaceHolder1_mainrow div div div table');
+                if (tableEl) {
+                    //collecting data
+                    const trElements = tableEl.querySelectorAll('tbody tr');
+                    if (trElements && trElements.length) {
+                        const noMatchesElement = trElements[0].querySelector('td[colspan="6"]');
+                        if (!noMatchesElement) {
+                            trElements.forEach(trElement => {
+                                const transactionInfo = {};
+                                transactionInfo.transactionHash = trElement.querySelector('td:nth-child(1)').innerText;
+                                const dataSpan = trElement.querySelector('td:nth-child(3) span');
 
-                            const attrs = {};
-                            for(let i = dataSpan.attributes.length - 1; i >= 0; i--) {
-                                const attr = dataSpan.attributes[i];
-                                attrs[attr.name] = attr.value;
-                            }
+                                const attrs = {};
+                                for (let i = dataSpan.attributes.length - 1; i >= 0; i--) {
+                                    const attr = dataSpan.attributes[i];
+                                    attrs[attr.name] = attr.value;
+                                }
 
-                            transactionInfo.createTime = attrs['title'] ? attrs['title'] : attrs['data-original-title'];
-                            transactionInfo.direction = trElement.querySelector('td:nth-child(5)').innerText;
-                            transactionInfo.direction = transactionInfo.direction.trim();
-                            const fromATag = trElement.querySelector('td:nth-child(4) a[href]');
-                            if (fromATag) {
-                                transactionInfo.from = fromATag.attributes.href.value;
-                                transactionInfo.from = transactionInfo.from.substr(-ACCOUNT_STR_LEN);
-                            } else {
-                                transactionInfo.from = trElement.querySelector('td:nth-child(4)').innerText;
-                            }
+                                transactionInfo.createTime = attrs['title'] ? attrs['title'] : attrs['data-original-title'];
+                                transactionInfo.direction = trElement.querySelector('td:nth-child(5)').innerText;
+                                transactionInfo.direction = transactionInfo.direction.trim();
+                                const fromATag = trElement.querySelector('td:nth-child(4) a[href]');
+                                if (fromATag) {
+                                    transactionInfo.from = fromATag.attributes.href.value;
+                                    transactionInfo.from = transactionInfo.from.substr(-ACCOUNT_STR_LEN);
+                                } else {
+                                    transactionInfo.from = trElement.querySelector('td:nth-child(4)').innerText;
+                                }
 
-                            const toATag = trElement.querySelector('td:nth-child(6) a[href]');
-                            if (toATag) {
-                                transactionInfo.to = toATag.attributes.href.value;
-                                transactionInfo.to = transactionInfo.to.substr(-ACCOUNT_STR_LEN);
-                            } else {
-                                transactionInfo.to = trElement.querySelector('td:nth-child(6)').innerText;
-                            }
+                                const toATag = trElement.querySelector('td:nth-child(6) a[href]');
+                                if (toATag) {
+                                    transactionInfo.to = toATag.attributes.href.value;
+                                    transactionInfo.to = transactionInfo.to.substr(-ACCOUNT_STR_LEN);
+                                } else {
+                                    transactionInfo.to = trElement.querySelector('td:nth-child(6)').innerText;
+                                }
 
-                            transactionInfo.amount = trElement.querySelector('td:nth-child(7)').innerText;
-                            transactionInfo.txFee = trElement.querySelector('td:nth-child(8)').innerText;
+                                transactionInfo.amount = trElement.querySelector('td:nth-child(7)').innerText;
+                                transactionInfo.txFee = trElement.querySelector('td:nth-child(8)').innerText;
 
-                            historyData.push(transactionInfo);
-                        });
-                        console.log('historyData', historyData);
+                                historyData.push(transactionInfo);
+                            });
+                            console.log('historyData', historyData);
+                        }
                     }
+
+                    this.setState({transactions: historyData});
+                } else {
+                    this.setState({getTransactionsError: 'can\'t get history'});
                 }
 
-                this.setState({transactions: historyData});
-            } else {
-                this.setState({getTransactionsError: 'can\'t get history'});
+                this.setState({
+                    showLoadingIndicator: false,
+                    transactionsLoaded: true
+                });
+            } catch (e) {
+                this.setState({
+                    getTransactionsError: 'can\'t get history',
+                    showLoadingIndicator: false,
+                    transactionsLoaded: true
+                });
             }
-
-            this.setState({
-                showLoadingIndicator: false,
-                transactionsLoaded: true
-            });
         } else {
             this.setState({getTransactionsError: 'can\'t get history'});
         }

@@ -14,20 +14,25 @@ export default {
                 method: method ? method : 'GET'
             };
 
-            const req = https.request(options, function (res) {
-                res.on('data', function (uint8ArrayData) {
-                    const str = String.fromCharCode.apply(null, uint8ArrayData);
-                    resolve(str);
+            try {
+                const req = https.request(options, function (res) {
+                    res.on('data', function (uint8ArrayData) {
+                        const str = String.fromCharCode.apply(null, uint8ArrayData);
+                        resolve(str);
+                    });
                 });
-            });
-            if (data) {
-                req.write(data);
-            }
-            req.end();
+                if (data) {
+                    req.write(data);
+                }
+                req.end();
 
-            req.on('error', function (e) {
-                reject(e);
-            });
+                req.on('error', function (e) {
+                    console.log('error while request');
+                    reject(e);
+                });
+            } catch(e) {
+                console.log('catched e', e);
+            }
         });
     },
     async getBalance(address, network) {
