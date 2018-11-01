@@ -4,5 +4,7 @@ node_modules
 .idea
 .project
 bundle.js
+app.js
+dist
 npm-debug.log
 package-lock.json

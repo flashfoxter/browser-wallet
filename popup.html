@@ -1,35 +1,26 @@
-<html>
-    <head>
-        <title>Browser Wallet</title>
-    </head>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Tiger Ethereum Wallet</title>
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
 
-    <body>
-        Mnemonic: <input id='mnemonic' type='text' />
-        Network: <select id='network'>
-            <option value='rinkeby'>Rinkeby</option>
-            <option value='kovan'>Kovan</option>
-            <option value='ropsten'>Ropsten</option>
-            <option value='mainnet'>Etherium Main Network</option>
-            <option value='custom'>Custom</option>
-        </select>
-        <br/>Custom: <input id='custom' type='text' />
-        <button id='connect'>Connect</button> <label id='connected'>not connected</label>
-        <br/><br/>
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
 
-        Account: <input id='account' disabled type='text' />
-        <br/>Balance: <label id='balance'></label>
-        <hr>
-        Send to: <input id='send_to' disabled type='text' /><br/>
-        Amount: <input id='amount' disabled type='text' /><br/>
-        <button id='send_button' disabled>Send</button><br/>
-        <button id='show_history' disabled>History</button><br/>
-        <div id='loading' style="display: none">
-            <img src="spinner.svg" />
-        </div>
-        <div id='transaction_info'></div>
-        <div id='history_table'></div>
-
-        <script src='bundle.js'></script>
-    </body>
-
+      To begin the development, run `npm start` in this folder.
+      To create a production bundle, use `npm run build`.
+    -->
+  <script src="app.js"></script>
+  </body>
 </html>
