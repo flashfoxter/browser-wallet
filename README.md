@@ -1,7 +1,7 @@
 # Google Chrome Ethereum Wallet
-  - Mnemonic phrase ([BIP39](https://iancoleman.io/bip39/))
+  - Mnemonic phrase ([BIP39](https://iancoleman.io/bip39/)) and private key import support
   - Connection to known Ethereum netwoks
-  - Connection to node via RPC
+  - Connection to custom node via RPC
   - Get balance
   - Send transactions
   - View transactions history (via [Etherscan](https://etherscan.io))
