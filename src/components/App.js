@@ -11,6 +11,8 @@ import { MuiThemeProvider } from '@material-ui/core/styles';
 import {theme} from './StyledComponents';
 import SignUpChooseType from "./SignUpChooseType";
 import SendScreen from './SendScreen'
+import AboutScreen from './AboutScreen'
+import SignUpPrivateKeyScreen from './SignUpPrivateKeyScreen'
 
 
 class App extends Component {
@@ -21,22 +23,34 @@ class App extends Component {
     }
 
     render() {
-        const { screen } = this.props;
+        const {currentScreen} = this.props.screen;
 
         let screenComponent = null;
-        if (screen === ScreenNames.MAIN_SCREEN) {
-            screenComponent = <MainScreen/>
-        } else if (screen === ScreenNames.SIGN_UP_MNEMONIC) {
-            screenComponent = <SignUpMnemonicScreen/>
-        } else if (screen === ScreenNames.SIGN_IN_SCREEN) {
-            screenComponent = <SignInScreen/>
-        } else if (screen === ScreenNames.SIGN_UP_CHOOSE_TYPE) {
-            screenComponent = <SignUpChooseType/>
-        } else if (screen === ScreenNames.SEND_SCREEN) {
-            screenComponent = <SendScreen/>
+        switch (currentScreen) {
+            case ScreenNames.SIGN_UP_MNEMONIC:
+                screenComponent = <SignUpMnemonicScreen/>
+                break;
+            case ScreenNames.SIGN_UP_CHOOSE_TYPE:
+                screenComponent = <SignUpChooseType/>
+                break;
+            case ScreenNames.SEND_SCREEN:
+                screenComponent = <SendScreen/>
+                break;
+            case ScreenNames.ABOUT_SCREEN:
+                screenComponent = <AboutScreen/>
+                break;
+            case ScreenNames.MAIN_SCREEN:
+                screenComponent = <MainScreen/>
+                break;
+            case ScreenNames.SIGN_UP_KEYS:
+                screenComponent = <SignUpPrivateKeyScreen/>
+                break;
+            case ScreenNames.SIGN_IN_SCREEN:
+            default:
+                screenComponent = <SignInScreen/>
         }
         return (
-            <div className="app">
+            <div style={{width: '360px', height: '600px', overflow: 'auto'}}>
                 <MuiThemeProvider theme={theme}>
                     {screenComponent}
                 </MuiThemeProvider>
@@ -49,7 +63,7 @@ class App extends Component {
  * @type {Object}
  */
 App.propTypes = {
-    screen: PropTypes.string.isRequired
+    screen: PropTypes.object.isRequired
 };
 
 /**

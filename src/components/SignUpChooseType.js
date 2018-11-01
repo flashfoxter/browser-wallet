@@ -132,6 +132,7 @@ class SignUpChooseType extends Component {
                 </Grid>
                 <Grid
                     className={classes.contentBlock}
+                    onClick={this.props.pageActions.changeScreen.bind(this, ScreenNames.SIGN_UP_KEYS)}
                     container
                     size='small'
                     justify='center'>

@@ -79,6 +79,8 @@ class SignInScreen extends Component {
                 let accounts = [];
                 if (typeof data === 'string') {
                     accounts = AuthHelper.getAddressesFromMnemonic(data, 10);
+                } else {
+                    accounts = [data.address.toLowerCase()];
                 }
                 this.props.pageActions.signIn({
                     login,

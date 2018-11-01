@@ -4,5 +4,6 @@ node_modules
 .project
 bundle.js
 app.js
+dist
 npm-debug.log
 .idea

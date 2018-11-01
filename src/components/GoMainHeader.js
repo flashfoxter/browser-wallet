@@ -27,12 +27,11 @@ class GoMainHeader extends Component {
     }
 
     handleClickGoMain = () => {
-        this.props.pageActions.changeScreen(this.props.screenName);
+        this.props.pageActions.goBackScreen();
     };
 
     render() {
         const {classes} = this.props;
-
 
         return (
             <Grid

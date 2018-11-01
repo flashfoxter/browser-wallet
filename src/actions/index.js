@@ -1,6 +1,9 @@
 import {store} from '../index';
 import NetHelper from "../helpers/NetHelper";
 import { networks } from '../constants/networks'
+import { ScreenNames } from '../reducers/screen'
+const Web3 = require('web3');
+const HDWalletProvider = require('truffle-hdwallet-provider');
 
 export const ActionsList = {
     'CONNECT_TO_NETWORK': 'CONNECT_TO_NETWORK',
@@ -15,12 +18,17 @@ export const ActionsList = {
     'SIGN_UP': 'SIGN_UP',
     'LOG_OUT': 'LOG_OUT',
     'SIGN_IN': 'SIGN_IN',
-    'CHANGE_SCREEN': 'CHANGE_SCREEN'
+    'CHANGE_SCREEN': 'CHANGE_SCREEN',
+    'GO_BACK_SCREEN': 'GO_BACK_SCREEN'
 };
 
 export const PageActions = {
     changeScreen: (screenName) => ({
-        type: screenName
+        type: ActionsList.CHANGE_SCREEN,
+        payload: screenName
+    }),
+    goBackScreen: () => ({
+        type: ActionsList.GO_BACK_SCREEN
     }),
     connectToNetwork: (payload) => ({
         type: ActionsList.CONNECT_TO_NETWORK,
@@ -62,15 +70,24 @@ export const PageActions = {
         const accountAddress = currentAccounts[accountIndex];
 
         const getBalanceRequest = async () => {
-            const result = await NetHelper.getBalance(accountAddress, networkName);
-            const balance = parseFloat(result);
+            let result = null;
+            if (networks[networkName]) {
+                result = await NetHelper.getBalance(accountAddress, networkName);
+            } else {
+                console.log('else');
+                const provider = new HDWalletProvider('', networkName);
+                const web3 = new Web3(provider);
+
+                result = await web3.eth.getBalance(accountAddress);
+                console.log('result', result);
+                result = web3.utils.fromWei(result, 'ether');
+            }
+            const balance = result;
             store.dispatch(PageActions.updateBalanceCallback({balance}));
         };
 
         console.log('getBalance', networks[networkName]);
-        if (networks[networkName]) {
-            getBalanceRequest();
-        }
+        getBalanceRequest();
 
         return {type: ActionsList.GET_BALANCE}
     }

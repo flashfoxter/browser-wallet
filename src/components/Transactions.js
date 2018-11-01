@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import { mainLightTextColor } from './StyledComponents';
 import Button from '@material-ui/core/Button/Button';
-import { networks } from '../constants/networks';
+import {networks} from '../constants/networks';
 import Fade from '@material-ui/core/Fade/Fade'
 import CircularProgress from '@material-ui/core/CircularProgress/CircularProgress';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel/ExpansionPanel';
@@ -17,6 +17,8 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary/Expan
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import {store} from '../index';
+import moment from 'moment';
+import Web3 from 'web3';
 
 const etherscanNetToURLMap = {
     rinkeby: 'https://rinkeby.etherscan.io/txs?a=',
@@ -24,6 +26,8 @@ const etherscanNetToURLMap = {
     kovan: 'https://kovan.etherscan.io/txs?a=',
     mainnet: 'https://etherscan.io/txs?a='
 };
+
+const TIME_FORMAT = 'MMM-DD-YYYY hh:mm:ss A';
 
 const styles = theme => ({
     greySubText: {
@@ -214,7 +218,29 @@ class Transactions extends Component {
 
                     this.setState({transactions: historyData});
                 } else {
-                    this.setState({getTransactionsError: 'can\'t get history'});
+                    try {
+                        const response = await NetHelper.getHistory(accountAddress, networkName);
+                        response.result.forEach(transaction => {
+                            const transactionInfo = {};
+                            transactionInfo.from = transaction.from;
+                            transactionInfo.to = transaction.to;
+                            transactionInfo.transactionHash = transaction.hash;
+                            transactionInfo.createTime = moment.unix(transaction.timeStamp).format(TIME_FORMAT);
+                            transactionInfo.direction = transaction.from === transaction.to
+                                ? 'SELF'
+                                : (transaction.from === accountAddress
+                                    ? 'OUT' : 'IN'
+                                  );
+                            transactionInfo.amount = Web3.utils.fromWei(transaction.value, 'ether');
+                            historyData.push(transactionInfo);
+                        });
+                        this.setState({transactions: historyData});
+
+                    } catch(e) {
+                        console.log('error while api req:',e);
+                        this.setState({getTransactionsError: 'can\'t get history'});
+                    }
+
                 }
 
                 this.setState({
@@ -222,8 +248,29 @@ class Transactions extends Component {
                     transactionsLoaded: true
                 });
             } catch (e) {
+                try {
+                    const response = await NetHelper.getHistory(accountAddress, networkName);
+                    response.result.forEach(transaction => {
+                        const transactionInfo = {};
+                        transactionInfo.from = transaction.from;
+                        transactionInfo.to = transaction.to;
+                        transactionInfo.transactionHash = transaction.hash;
+                        transactionInfo.createTime = moment.unix(transaction.timeStamp).format(TIME_FORMAT);
+                        transactionInfo.direction = transaction.from === transaction.to
+                            ? 'SELF'
+                            : (transaction.from === accountAddress
+                                    ? 'OUT' : 'IN'
+                            );
+                        transactionInfo.amount = Web3.utils.fromWei(transaction.value, 'ether');
+                        historyData.push(transactionInfo);
+                    });
+                    this.setState({transactions: historyData});
+
+                } catch(e) {
+                    console.log('error while api req:',e);
+                    this.setState({getTransactionsError: 'can\'t get history'});
+                }
                 this.setState({
-                    getTransactionsError: 'can\'t get history',
                     showLoadingIndicator: false,
                     transactionsLoaded: true
                 });

@@ -21,7 +21,7 @@ import Button from '@material-ui/core/Button';
 import {bigElementWidth, mainColor, mainLightTextColor} from "./StyledComponents";
 import Typography from "@material-ui/core/Typography";
 import {ScreenNames} from "../reducers/screen";
-import GoMainHeader from './GoMainHeader'
+import GoMainHeader from './GoMainHeader';
 import AccountSelector from "./AccountSelector";
 import SimpleAccountSelector from "./SimpleAccountSelector";
 import Backdrop from "@material-ui/core/Backdrop/Backdrop";
@@ -30,9 +30,12 @@ import CircularProgress from "../../node_modules/@material-ui/core/CircularProgr
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogActions from "@material-ui/core/DialogActions";
 import Dialog from "@material-ui/core/Dialog";
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
 import {networks} from "../constants/networks";
+import {store} from '../index';
+import Web3 from 'web3';
 
-const Web3 = require('web3');
 const HDWalletProvider = require('truffle-hdwallet-provider');
 
 const styles = theme => ({
@@ -46,6 +49,14 @@ const styles = theme => ({
     amountText: {
         color: mainColor
     },
+    commissionLabelText: {
+        fontSize: '12px',
+        color: mainLightTextColor
+    },
+    commissionText: {
+        fontSize: '12px',
+        color: mainColor
+    },
     backdrop: {
         zIndex: 0
     },
@@ -53,15 +64,25 @@ const styles = theme => ({
         position: 'fixed',
         top: 'calc(50% - 44px)',
         left: 'calc(50% - 44px)',
+    },
+    dialogText: {
+        color: mainLightTextColor,
+        fontSize: '14px',
+        whiteSpace: 'pre-wrap'
+    },
+    dialogTitle: {
+        fontSize: '20px',
+        whiteSpace: 'pre-wrap'
     }
 });
-
 
 const FieldNames = {
     address: 'address',
     amount: 'amount',
     password: 'password'
 };
+
+const DEFAULT_GASLIMIT = 21000;
 
 class SendScreen extends Component {
     constructor (props) {
@@ -74,7 +95,10 @@ class SendScreen extends Component {
             showPassword: false,
             sendInProgress: false,
             openDialogue: false,
-            dialogueMessage: ''
+            dialogueTitle: '',
+            dialogueMessage: null,
+            completedSuccessful: false,
+            commission: '-'
         };
 
         this.fields = {
@@ -82,15 +106,34 @@ class SendScreen extends Component {
             amount: new InputFieldInState({}, FieldNames.amount, this),
             password: new InputFieldInState({}, FieldNames.password, this)
         };
+
+        const {networkName} = this.props.wallet;
+
+        let networkUri = networkName;
+        if (networks[networkName]) {
+            networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
+        }
+        const provider = new HDWalletProvider('', networkUri);
+        this.testWeb3 = new Web3(provider);
+        console.log('w3', this.testWeb3, networkUri);
+        this.gasPrice = 1000000000;
+        this.updateGasPrice()
+
+    }
+
+    async updateGasPrice() {
+        this.gasPrice = await this.testWeb3.eth.getGasPrice();
+        const BN = this.testWeb3.utils.BN;
+        let gasPrice = new BN(this.gasPrice);
+        const commissionBN = gasPrice.mul(new BN(DEFAULT_GASLIMIT));
+
+        let commission = this.testWeb3.utils.fromWei(commissionBN, 'ether');
+        this.setState({commission: commission});
+        console.log('currentGasPrice', this.gasPrice);
     }
 
     async sendTo(event) {
 
-
-        // return;
-        // connect then send
-
-        const sendButton = event.target;
         const toAddress = this.state.address.value;
         const {currentAccounts, accountIndex} = this.props.accounts;
         const {balance, networkName} = this.props.wallet;
@@ -125,6 +168,8 @@ class SendScreen extends Component {
         const transactionObject = {
             from: accountAddress,
             to: toAddress,
+            gasPrice: this.gasPrice,
+            gas: DEFAULT_GASLIMIT,
             value: Web3.utils.toWei(this.state.amount.value, 'ether')
         };
 
@@ -139,26 +184,44 @@ class SendScreen extends Component {
                     networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
                 }
 
-                const provider = new HDWalletProvider(data, networkUri);
+                const provider = new HDWalletProvider(data, networkUri, 0, 10);
                 web3 = new Web3(provider);
+
+                web3.eth.defaultAccount = accountAddress;
+            } else {
+                let networkUri = networkName;
+
+                if (networks[networkName]) {
+                    networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
+                }
+
+                web3 = new Web3(new Web3.providers.HttpProvider(networkUri));
+                web3.eth.accounts.wallet.add(data);
             }
 
             this.setState({sendInProgress: true});
             try {
                 const transactionInfo = await web3.eth.sendTransaction(transactionObject);
                 console.log('TransactionInfo:', transactionInfo);
-                //this.transactionInfo.innerText += `sent transaction with id: ${transactionInfo.transactionHash}\n`;
+
                 //show dialog
+                const amount = this.state.amount.value;
+                const hash = transactionInfo.transactionHash;
+
                 this.setState({
                     openDialogue: true,
-                    dialogueMessage: 'transaction sent'
+                    completedSuccessful: true,
+                    dialogueTitle: 'You successfully\nmake a transaction:',
+                    dialogueMessage: "Send to: \n" + toAddress
+                        + "\nAmount: " + amount + " ETH\nTransactionHash\n" + hash
                 });
             } catch (error) {
                 console.log('TransactionError:', error);
                 //show dialog with error
                 this.setState({
                     openDialogue: true,
-                    dialogueMessage: 'transaction error'
+                    dialogueTitle: 'Transaction error',
+                    dialogueMessage: "Error description:\n" + error.message
                 });
             }
             this.setState({sendInProgress: false});
@@ -177,7 +240,15 @@ class SendScreen extends Component {
     };
 
     handleClose() {
-        this.setState({openDialogue: false})
+        if (!this.state.completedSuccessful) {
+            this.setState({
+                openDialogue: false,
+                dialogueTitle: '',
+                dialogueMessage: null
+            });
+        } else {
+            this.props.pageActions.changeScreen(ScreenNames.MAIN_SCREEN);
+        }
     }
 
     render() {
@@ -204,7 +275,6 @@ class SendScreen extends Component {
                         <div>
                             <span className={classes.labelText}>Balance: </span>
                             <span className={classes.amountText}>{this.props.wallet.balance} ETH</span>
-                            <span>{this.state.sendInProgress ? 'true' : 'false'}</span>
                         </div>
                     </Grid>
                     <Grid
@@ -240,6 +310,15 @@ class SendScreen extends Component {
                                 : null
                             }
                         </FormControl>
+                    </Grid>
+                    <Grid
+                        container
+                        style={{ paddingTop: '0px' }}
+                        justify='flex-start'>
+                        <div>
+                            <span className={classes.commissionLabelText}>Commission: </span>
+                            <span className={classes.commissionText}>{this.state.commission} ETH</span>
+                        </div>
                     </Grid>
                     <Grid
                         container
@@ -300,8 +379,18 @@ class SendScreen extends Component {
                 <Dialog
                     open={this.state.openDialogue}
                     onClose={this.handleClose.bind(this)}
+                    aria-describedby="alert-dialog-description"
                     aria-labelledby="alert-dialog-title">
-                    <DialogTitle id="alert-dialog-title">You successfully Signed Up</DialogTitle>
+                    <DialogTitle id="alert-dialog-title" disableTypography={true}>
+                        <Typography variant='h2' className={classes.dialogTitle}>
+                            {this.state.dialogueTitle}
+                        </Typography>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Typography className={classes.dialogText}>
+                            {this.state.dialogueMessage}
+                        </Typography>
+                    </DialogContent>
                     <DialogActions>
                         <Button onClick={this.handleClose.bind(this)} color="primary" autoFocus>
                             OK

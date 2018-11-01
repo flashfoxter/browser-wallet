@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "author": "https://gotiger.com",
   "scripts": {
-    "build": "browserify content.js -o bundle.js",
-    "build:react": "browserify -t [ babelify --presets [ es2015 react stage-1 ] --plugins transform-runtime] src/index.js -o app.js"
+    "build": "browserify -t [ babelify --presets [ es2015 react stage-1 ] --plugins transform-runtime] src/index.js -o app.js",
+    "build:dist": "npm run clean && npm run mkdirs && npm run copyfiles",
+    "mkdirs": "mkdir dist && cd dist && mkdir icons",
+    "clean": "rimraf dist",
+    "copyfiles": "cp -r icons/* dist/icons && cp app.js dist && cp popup.html dist && cp manifest.json dist && cp wallet-logo.png dist"
   },
   "dependencies": {
     "@material-ui/core": "^3.2.0",
@@ -17,10 +20,11 @@
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-1": "^6.24.1",
     "babelify": "^7.3.0",
-    "bip39": "^2.5.0",
     "browserify": "^13.0.0",
     "chrome-https": "^2.0.1",
+    "copy-text-to-clipboard": "^1.0.4",
     "ethereumjs-wallet": "^0.6.2",
+    "moment": "^2.22.2",
     "prop-types": "^15.6.2",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",

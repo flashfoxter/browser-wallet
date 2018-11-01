@@ -26,6 +26,7 @@ import Delete from '@material-ui/icons/Delete';
 import Done from '@material-ui/icons/Done';
 import Exit from '@material-ui/icons/ExitToApp';
 import { ArrayWithKeys } from '../models/ArrayWithKeys'
+import { ScreenNames } from '../reducers/screen'
 
 const styles = theme => ({
     container: {
@@ -178,7 +179,6 @@ class MainHeader extends Component {
     }
 
     onNetworkListUpdate(networkItems) {
-        console.log('update net Items', networkItems, this.props.pageActions.updateNetworkItems);
         this.props.pageActions.updateNetworkItems(networkItems);
     }
 
@@ -241,6 +241,10 @@ class MainHeader extends Component {
         this.setState({
             networkName: newValue,
         });
+    }
+
+    aboutScreen() {
+        this.props.pageActions.changeScreen(ScreenNames.ABOUT_SCREEN);
     }
 
     customNetworkBlur(event) {
@@ -353,7 +357,8 @@ class MainHeader extends Component {
                       alignItems='center'
                       justify='flex-start'>
                     <img src='./icons/ic-wallet-logo.svg'
-                         style={{width: 44, height: 44, marginLeft: 14}}/>
+                         onClick={this.aboutScreen.bind(this)}
+                         style={{width: 44, height: 44, marginLeft: 14, cursor: 'pointer'}}/>
                 </Grid>
                 <Grid item xs={7}
                       className={classes.container}

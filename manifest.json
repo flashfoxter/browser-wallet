@@ -5,7 +5,7 @@
 
     "description": "Ethereum Wallet Chrome extension",
     "icons": {
-        "128": "icon128.png"
+        "128": "wallet-logo.png"
      },
 
     "browser_action": {
@@ -16,5 +16,4 @@
 
     "permissions": ["http://localhost:8501/*"],
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
-
 }

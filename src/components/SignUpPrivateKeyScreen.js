@@ -9,6 +9,7 @@ import {ScreenNames} from "../reducers/screen";
 import GoMainHeader from "./GoMainHeader";
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
+import Input from "@material-ui/core/Input";
 import FilledInput from "@material-ui/core/FilledInput";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Button from "@material-ui/core/Button";
@@ -20,39 +21,43 @@ import AuthHelper from "../helpers/AuthHelper";
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import {Mnemonic} from '../libs/jsbip39/jsbip39'
+import Web3 from 'web3';
+import Typography from '@material-ui/core/Typography'
 
+console.log('web3', Web3);
 const FieldNames = {
     mnemonic: 'mnemonic',
     login: 'login',
     password: 'password'
 };
 
-class SignUpMnemonicScreen extends Component {
+class SignUpPrivateKeyScreen extends Component {
     constructor (props) {
         super(props);
 
         this.state = {
-            mnemonic: {value: '', error: ''},
             login: {value: '', error: ''},
             password: {value: '', error: ''},
             openDialogue: false,
-            showPassword: false
+            showPassword: false,
+            fileName: '',
+            fileError: ''
         };
 
         this.fields = {
-            mnemonic: new InputFieldInState({}, FieldNames.mnemonic, this),
             login: new InputFieldInState({}, FieldNames.login, this),
             password: new InputFieldInState({}, FieldNames.password, this)
         };
+
+        this.account = null;
+
         this.payload = null;
     }
 
     signUp() {
         let isValid = true;
 
-        if (!this.state.mnemonic.value) {
-            this.fields.mnemonic.error = 'Mnemonic can\'t be empty';
+        if (!this.account) {
             isValid = false;
         }
 
@@ -73,11 +78,10 @@ class SignUpMnemonicScreen extends Component {
         }
 
         if (isValid) {
-            console.log('isValid Form');
-            const accounts = AuthHelper.getAddressesFromMnemonic(this.state.mnemonic.value, 10);
+            const accounts = [this.account.address.toLowerCase()];
 
             this.payload = {
-                mnemonic: this.state.mnemonic.value,
+                account: this.account,
                 login: this.state.login.value,
                 password: this.state.password.value,
                 accounts
@@ -87,7 +91,7 @@ class SignUpMnemonicScreen extends Component {
             console.log('isValid Form', this.payload);
         } else {
             const payload = {
-                mnemonic: this.fields.mnemonic.error,
+                account: this.account,
                 login: this.fields.login.error,
                 password: this.fields.password.error
             };
@@ -96,11 +100,41 @@ class SignUpMnemonicScreen extends Component {
         }
     }
 
-    generateMnemonic() {
-        const mnemonic = new Mnemonic('english');
-        this.fields.mnemonic.value = mnemonic.generate();
+    fileHandler(event) {
+        const target = event.target;
+
+        if (target.files && target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (theFile => {
+                return e => {
+                    const privateKey = e.target.result;
+
+                    let fileError = '';
+                    try {
+                        const web3 = new Web3();
+                        this.account = web3.eth.accounts.privateKeyToAccount(privateKey);
+                        console.log(this.account);
+                    } catch(e) {
+                        console.log('error while readPK', e);
+                        this.account = null;
+                        fileError = 'Selected file does not contain the correct privateKey';
+                    }
+                    console.log('afterSelect:', fileError, theFile.name);
+                    this.setState({fileName: theFile.name, fileError});
+
+                };
+            })(target.files[0]);
+
+            // Read in the private key file.
+            reader.readAsText(target.files[0]);
+
+        }
     }
 
+    clickToSelectFile(event) {
+        console.log('event', event, this.refs.pk);
+        this.refs.pk.click();
+    }
 
     setValue(event, fieldName) {
         const value = event.target.value;
@@ -127,31 +161,45 @@ class SignUpMnemonicScreen extends Component {
                 </GoMainHeader>
                 <Grid
                     container
-                    style={{ paddingTop: '32px' }}
+                    style={{ padding: '24px 32px 12px 32px' }}
+                    size='small'
                     justify='center'>
-                    <FormControl
-                        variant="filled"
-                        error={!!this.state.mnemonic.error}>
-                        <InputLabel htmlFor="component-filled-mnemonic">Mnemonic</InputLabel>
-                        <FilledInput id="component-filled-mnemonic"
-                                     value={this.state.mnemonic.value}
-                                     onChange={event => this.setValue(event, FieldNames.mnemonic)} />
-                        {this.state.mnemonic.error
-                            ? <FormHelperText>{this.state.mnemonic.error}</FormHelperText>
-                            : null
-                        }
-                    </FormControl>
+                    <Grid
+                        container
+                        justify='flex-start'
+                        item xs={6}>
+                        <Button variant='outlined' onClick={this.clickToSelectFile.bind(this)}>+ Private key</Button>
+                    </Grid>
+                    <Grid
+                        container
+                        justify='flex-start'
+                        alignItems='center'
+                        style={{paddingLeft: '12px'}}
+                        item xs={6}>
+                        <input ref='pk' type='file' onChange={this.fileHandler.bind(this)}
+                               style={{width:'1px', height:'1px', overflow:'hidden', visibility: 'hidden'}}
+                        />
+                        <Typography noWrap style={{maxWidth: '125px'}}>
+                            {this.state.fileName}
+                        </Typography>
+                    </Grid>
                 </Grid>
+                {
+                    this.state.fileError
+                        ? <Grid
+                            container
+                            style={{ padding: '0 32px 0 32px', borderTop: '1px solid #b00020' }}
+                            size='small'
+                            justify='center'>
+                            <Typography style={{color: '#b00020', fontSize: '12px'}}>
+                                {this.state.fileError}
+                            </Typography>
+                          </Grid>
+                        : null
+                }
                 <Grid
                     container
                     style={{ paddingTop: '24px' }}
-                    size='small'
-                    justify='center'>
-                    <Button onClick={this.generateMnemonic.bind(this)}>Generate</Button>
-                </Grid>
-                <Grid
-                    container
-                    style={{ paddingTop: '32px' }}
                     justify='center'>
                     <FormControl
                         variant="filled"
@@ -224,7 +272,7 @@ class SignUpMnemonicScreen extends Component {
  * Set data types for App
  * @type {Object}
  */
-SignUpMnemonicScreen.propTypes = {
+SignUpPrivateKeyScreen.propTypes = {
     accounts: PropTypes.object.isRequired
 };
 
@@ -252,4 +300,4 @@ function mapDispatchToProps(dispatch) {
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(SignUpMnemonicScreen)
+)(SignUpPrivateKeyScreen)

@@ -15,8 +15,12 @@ const accounts = createStoredReducer((state, action) => {
             return Object.assign({}, state, {accountIndex});
 
         case ActionsList.SIGN_UP:
-            const {login, password, mnemonic, accounts} = action.payload;
-            AuthHelper.addUserToStorage(login, password, mnemonic);
+            const {login, password, mnemonic, accounts, account} = action.payload;
+            if (mnemonic) {
+                AuthHelper.addUserToStorage(login, password, mnemonic);
+            } else {
+                AuthHelper.addUserToStorage(login, password, account);
+            }
             return Object.assign(
                 {},
                 state,

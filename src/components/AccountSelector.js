@@ -30,7 +30,9 @@ import Exit from '@material-ui/icons/ExitToApp';
 import { ArrayWithKeys } from '../models/ArrayWithKeys'
 import Copy from './icons/Copy'
 import Popover from '@material-ui/core/Popover/Popover'
+import * as copyText from 'copy-text-to-clipboard';
 
+console.log('copyText', copyText)
 const styles = theme => ({
     container: {
         display: 'flex',
@@ -81,7 +83,10 @@ const styles = theme => ({
         verticalAlign: 'middle',
         display: 'inline-block',
         lineHeight: '1em',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        '&:hover': {
+            color: '#4c4c4c'
+        }
     },
     menuItem: {
         position: 'relative',
@@ -118,7 +123,7 @@ const styles = theme => ({
     },
 });
 
-const POPOVER_TIMEOUT = 3000;
+const POPOVER_TIMEOUT = 1500;
 
 class AccountSelector extends Component {
     constructor (props) {
@@ -158,22 +163,17 @@ class AccountSelector extends Component {
         const {currentAccounts, accountIndex} = this.props.accounts;
         const accountAddress = currentAccounts[accountIndex];
         const popoverAnchorEl = event.target;
-        navigator.clipboard.writeText(accountAddress)
-            .then(() => {
-                this.setState({
-                    popoverOpen: true,
-                    popoverAnchorEl
-                });
-                setTimeout(() => {
-                    this.setState({
-                        popoverOpen: false,
-                        popoverAnchorEl: null
-                    });
-                }, POPOVER_TIMEOUT)
-            })
-            .catch(err => {
-                console.log('cant copy add to clipboard', err);
+        copyText.default(accountAddress);
+        this.setState({
+            popoverOpen: true,
+            popoverAnchorEl
+        });
+        setTimeout(() => {
+            this.setState({
+                popoverOpen: false,
+                popoverAnchorEl: null
             });
+        }, POPOVER_TIMEOUT);
     }
 
     renderValue(value) {
@@ -254,6 +254,7 @@ class AccountSelector extends Component {
                       className={classes.accountAddress}
                       justify='center'>
                     <Typography noWrap={true} style={{width: '205px', fontSize: '12px'}}
+                                onClick={this.copyAddress.bind(this)}
                                 color='inherit'>{accountAddress}</Typography>
                     <span className={classes.iconContainer}
                         onClick={this.copyAddress.bind(this)}>
