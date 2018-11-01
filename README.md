@@ -1,9 +1,10 @@
 # Google Chrome Ethereum Wallet
-  - Mnemonic pharase
-  - Connection to real and test Ethereum netwoks
+  - Mnemonic phrase ([BIP39](https://iancoleman.io/bip39/))
+  - Connection to known Ethereum netwoks
   - Connection to node via RPC
   - Get balance
-  - TODO: send transaction
+  - Send transactions
+  - View transactions history (via [Etherscan](https://etherscan.io))
 
 ## Installation
 

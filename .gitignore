@@ -1,9 +1,10 @@
 .settings
 node_modules
 
+.idea
 .project
 bundle.js
 app.js
 dist
 npm-debug.log
-.idea
+package-lock.json
