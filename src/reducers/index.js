@@ -1,7 +1,7 @@
-import {combineReducers} from 'redux'
-import screen from './screen'
-import wallet from './wallet'
-import accounts from './accounts'
+import { combineReducers } from 'redux';
+import accounts from './accounts';
+import screen from './screen';
+import wallet from './wallet';
 
 const walletStore = combineReducers({
     screen,

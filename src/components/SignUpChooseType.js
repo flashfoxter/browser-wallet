@@ -1,34 +1,14 @@
-import React, {Component} from 'react'
-import PropTypes from 'prop-types';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import {PageActions} from '../actions/index'
-import InputFieldInState from "../models/InputFieldInState";
-import AuthHelper from "../helpers/AuthHelper";
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import TextField from '@material-ui/core/TextField';
-import MenuItem from '@material-ui/core/MenuItem';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import FilledInput from '@material-ui/core/FilledInput';
-import FormControl from '@material-ui/core/FormControl';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import InputLabel from '@material-ui/core/InputLabel';
 import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
-import {
-    bigElementWidth,
-    mainBorderRadius,
-    mainColor,
-    topPanelBackgroundColor,
-    topPanelHeight
-} from "./StyledComponents";
-import Typography from "@material-ui/core/Typography";
-import {ScreenNames} from "../reducers/screen";
-import Close from '@material-ui/icons/Close';
-import GoMainHeader from "./GoMainHeader";
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { PageActions } from '../actions/index';
+import { ScreenNames } from '../reducers/screen';
+import GoMainHeader from './GoMainHeader';
+import { mainBorderRadius, mainColor } from './StyledComponents';
 
 // f7
 const styles = theme => ({

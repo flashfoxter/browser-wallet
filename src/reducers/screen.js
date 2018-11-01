@@ -1,5 +1,5 @@
-import {ActionsList} from "../actions";
-import {createStoredReducer} from '../models/StoredReducer';
+import { ActionsList } from '../actions';
+import { createStoredReducer } from '../models/StoredReducer';
 
 export const ScreenNames = {
     'SIGN_IN_SCREEN': 'SIGN_IN_SCREEN',

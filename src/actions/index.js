@@ -1,9 +1,8 @@
-import {store} from '../index';
-import NetHelper from "../helpers/NetHelper";
-import { networks } from '../constants/networks'
-import { ScreenNames } from '../reducers/screen'
-const Web3 = require('web3');
-const HDWalletProvider = require('truffle-hdwallet-provider');
+import HDWalletProvider from 'truffle-hdwallet-provider';
+import Web3 from 'web3';
+import { networks } from '../constants/networks';
+import NetHelper from '../helpers/NetHelper';
+import { store } from '../index';
 
 export const ActionsList = {
     'CONNECT_TO_NETWORK': 'CONNECT_TO_NETWORK',

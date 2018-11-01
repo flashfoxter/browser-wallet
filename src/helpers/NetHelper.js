@@ -1,9 +1,8 @@
-import {networks} from '../constants/networks';
-import { ETHERSCAN_TOKEN } from '../constants/etherscan'
-
-const https = require('https');
-const urlParser = require('url');
-const Web3 = require('web3');
+import https from 'https';
+import urlParser from 'url';
+import Web3 from 'web3';
+import { ETHERSCAN_TOKEN } from '../constants/etherscan';
+import { networks } from '../constants/networks';
 
 const ETHERSCAN_NETWORKS_URI_MAP = {
     [networks.rinkeby]: 'https://api-rinkeby.etherscan.io',

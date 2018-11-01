@@ -1,28 +1,27 @@
-import React, {Component} from 'react'
-import PropTypes from 'prop-types'
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import {PageActions} from '../actions/index'
-import InputFieldInState from "../models/InputFieldInState";
-import Grid from "@material-ui/core/Grid";
-import {ScreenNames} from "../reducers/screen";
-import GoMainHeader from "./GoMainHeader";
-import FormControl from "@material-ui/core/FormControl";
-import InputLabel from "@material-ui/core/InputLabel";
-import Input from "@material-ui/core/Input";
-import FilledInput from "@material-ui/core/FilledInput";
-import FormHelperText from "@material-ui/core/FormHelperText";
-import Button from "@material-ui/core/Button";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import IconButton from "@material-ui/core/IconButton";
-import VisibilityOff from "../../node_modules/@material-ui/icons/VisibilityOff";
-import Visibility from "../../node_modules/@material-ui/icons/Visibility";
-import AuthHelper from "../helpers/AuthHelper";
+import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import FilledInput from '@material-ui/core/FilledInput';
+import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import Grid from '@material-ui/core/Grid';
+import IconButton from '@material-ui/core/IconButton';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import InputLabel from '@material-ui/core/InputLabel';
+import Typography from '@material-ui/core/Typography';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import Web3 from 'web3';
-import Typography from '@material-ui/core/Typography'
+import Visibility from '../../node_modules/@material-ui/icons/Visibility';
+import VisibilityOff from '../../node_modules/@material-ui/icons/VisibilityOff';
+import { PageActions } from '../actions/index';
+import AuthHelper from '../helpers/AuthHelper';
+import InputFieldInState from '../models/InputFieldInState';
+import { ScreenNames } from '../reducers/screen';
+import GoMainHeader from './GoMainHeader';
 
 console.log('web3', Web3);
 const FieldNames = {

@@ -1,32 +1,26 @@
-import React, {Component} from 'react'
-import PropTypes from 'prop-types';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import {PageActions} from '../actions/index'
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import Grid from '@material-ui/core/Grid';
-import {
-    topPanelBackgroundColor,
-    topPanelHeight
-} from "./StyledComponents";
-import {networks} from '../constants/networks';
+import Divider from '@material-ui/core/Divider';
 import FilledInput from '@material-ui/core/FilledInput';
-import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
+import Grid from '@material-ui/core/Grid';
+import IconButton from '@material-ui/core/IconButton';
 import InputBase from '@material-ui/core/InputBase';
 import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import Typography from "@material-ui/core/Typography";
-import Divider from '@material-ui/core/Divider';
-
-import Lens from '@material-ui/icons/Lens';
+import { withStyles } from '@material-ui/core/styles';
 import Add from '@material-ui/icons/Add';
 import Delete from '@material-ui/icons/Delete';
 import Done from '@material-ui/icons/Done';
 import Exit from '@material-ui/icons/ExitToApp';
-import { ArrayWithKeys } from '../models/ArrayWithKeys'
-import { ScreenNames } from '../reducers/screen'
+import Lens from '@material-ui/icons/Lens';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { PageActions } from '../actions/index';
+import { networks } from '../constants/networks';
+import { ArrayWithKeys } from '../models/ArrayWithKeys';
+import { ScreenNames } from '../reducers/screen';
+import { topPanelBackgroundColor, topPanelHeight } from './StyledComponents';
 
 const styles = theme => ({
     container: {
@@ -253,7 +247,8 @@ class MainHeader extends Component {
                 value: event.target.value,
                 label: event.target.value,
                 type: NetworkType.custom
-            }
+            };
+
             try {
                 this.networkItemsForSelect.addItem(networkObj);
             } catch(e) {

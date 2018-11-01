@@ -1,9 +1,8 @@
-import React, {Component} from 'react';
-import { bindActionCreators } from 'redux';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import {PageActions} from '../actions/index';
-import {ScreenNames} from '../reducers/screen';
-
+import { bindActionCreators } from 'redux';
+import { PageActions } from '../actions/index';
+import { ScreenNames } from '../reducers/screen';
 
 class AppMenu extends Component {
 

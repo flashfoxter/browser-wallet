@@ -1,6 +1,5 @@
-import { ActionsList, PageActions } from '../actions'
-import {ScreenNames} from "./screen";
-import {createStoredReducer} from '../models/StoredReducer';
+import { ActionsList } from '../actions';
+import { createStoredReducer } from '../models/StoredReducer';
 
 const initialState = {
     isConnected: false,

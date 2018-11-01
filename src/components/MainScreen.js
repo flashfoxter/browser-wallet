@@ -1,23 +1,20 @@
-import React, {Component} from 'react'
-import PropTypes from 'prop-types'
-import { bindActionCreators } from 'redux';
+import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography/Typography';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import HDWalletProvider from 'truffle-hdwallet-provider';
 import Web3 from 'web3';
-import {networks} from '../constants/networks';
-// import * as https from 'https';
-// import * as urlParser from 'url';
-import {PageActions} from '../actions/index'
-import Transactions from "./Transactions";
-import AuthHelper from "../helpers/AuthHelper";
-import NetHelper from "../helpers/NetHelper";
-import Grid from "@material-ui/core/Grid";
-import MainHeader from "./MainHeader";
-import AccountSelector from './AccountSelector'
-import Typography from '@material-ui/core/Typography/Typography'
-import { mainColor } from './StyledComponents'
-import Button from '@material-ui/core/Button'
-import { ScreenNames } from '../reducers/screen'
+import { PageActions } from '../actions/index';
+import { networks } from '../constants/networks';
+import AuthHelper from '../helpers/AuthHelper';
+import { ScreenNames } from '../reducers/screen';
+import AccountSelector from './AccountSelector';
+import MainHeader from './MainHeader';
+import { mainColor } from './StyledComponents';
+import Transactions from './Transactions';
 
 const CUSTOM_ID = 'custom';
 
@@ -82,8 +79,6 @@ class MainScreen extends Component {
     }
 
     render() {
-        const {currentAccounts, accountIndex} = this.props.accounts;
-
         return (
             <Grid
                 container

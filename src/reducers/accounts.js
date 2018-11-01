@@ -1,6 +1,6 @@
-import {ActionsList} from '../actions';
+import { ActionsList } from '../actions';
 import AuthHelper from '../helpers/AuthHelper';
-import {createStoredReducer} from '../models/StoredReducer';
+import { createStoredReducer } from '../models/StoredReducer';
 
 const initialState = {
     currentLogin: '',

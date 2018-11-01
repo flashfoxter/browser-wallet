@@ -1,18 +1,14 @@
-import React, {Component} from 'react'
-import PropTypes from 'prop-types';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import {PageActions} from '../actions/index'
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
 import Grid from '@material-ui/core/Grid';
-import {
-    topPanelBackgroundColor,
-    topPanelHeight
-} from "./StyledComponents";
-import Typography from "@material-ui/core/Typography";
-
+import IconButton from '@material-ui/core/IconButton';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import Close from '@material-ui/icons/Close';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { PageActions } from '../actions/index';
+import { topPanelBackgroundColor, topPanelHeight } from './StyledComponents';
 
 const styles = theme => ({
     container: {

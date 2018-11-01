@@ -47,7 +47,7 @@ export class ArrayWithKeys {
         if (this.keyValues[key]) {
             this.arr = this.arr.filter(item => {
                 return item[this.keyAttr] !== key;
-            })
+            });
             delete this.keyValues[key];
             this.onUpdate(this.arr);
             return true;

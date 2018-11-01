@@ -30,4 +30,4 @@ export const createStoredReducer = (reducer, reducerName, initialState) => {
         }
 
     }
-}
+};

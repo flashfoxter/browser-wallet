@@ -1,36 +1,17 @@
-import React, {Component} from 'react'
-import ReactDOM from 'react-dom';
-import PropTypes from 'prop-types';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import {PageActions} from '../actions/index'
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import Grid from '@material-ui/core/Grid';
-import {
-    mainBorderRadius,
-    topPanelBackgroundColor,
-    topPanelHeight
-} from "./StyledComponents";
-import {networks} from '../constants/networks';
-import FilledInput from '@material-ui/core/FilledInput';
-import InputLabel from '@material-ui/core/InputLabel';
-import InputBase from '@material-ui/core/InputBase';
-import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
+import Grid from '@material-ui/core/Grid';
+import InputBase from '@material-ui/core/InputBase';
+import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
-import Typography from "@material-ui/core/Typography";
-import Divider from '@material-ui/core/Divider';
-
-import Lens from '@material-ui/icons/Lens';
-import Add from '@material-ui/icons/Add';
-import Delete from '@material-ui/icons/Delete';
-import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import Done from '@material-ui/icons/Done';
-import Exit from '@material-ui/icons/ExitToApp';
-import { ArrayWithKeys } from '../models/ArrayWithKeys'
-import Copy from './icons/Copy'
-import Popover from '@material-ui/core/Popover/Popover'
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { PageActions } from '../actions/index';
+import { mainBorderRadius } from './StyledComponents';
 
 const styles = theme => ({
     container: {
@@ -63,11 +44,7 @@ const styles = theme => ({
         padding: '0 16px'
     },
     selectIcon: {
-        // top: 'calc(50% - 12px)',
-        // right: -25,
         height: '25px',
-        // display: 'none',
-        // position: 'relative',
         lineHeight: '1em',
         padding: '0',
     },
@@ -203,8 +180,6 @@ class SimpleAccountSelector extends Component {
                 </Grid>
             );
         });
-
-        const accountAddress = currentAccounts[accountIndex];
 
         return (
             <FormControl

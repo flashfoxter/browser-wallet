@@ -1,24 +1,24 @@
-import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
-import NetHelper from '../helpers/NetHelper';
-import {PageActions} from '../actions/index';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography/Typography';
-import { withStyles } from '@material-ui/core/styles';
-import { mainLightTextColor } from './StyledComponents';
 import Button from '@material-ui/core/Button/Button';
-import {networks} from '../constants/networks';
-import Fade from '@material-ui/core/Fade/Fade'
 import CircularProgress from '@material-ui/core/CircularProgress/CircularProgress';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel/ExpansionPanel';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails/ExpansionPanelDetails';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary/ExpansionPanelSummary';
+import Fade from '@material-ui/core/Fade/Fade';
+import Grid from '@material-ui/core/Grid';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import {store} from '../index';
 import moment from 'moment';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import Web3 from 'web3';
+import { PageActions } from '../actions/index';
+import { networks } from '../constants/networks';
+import NetHelper from '../helpers/NetHelper';
+import { store } from '../index';
+import { mainLightTextColor } from './StyledComponents';
 
 const etherscanNetToURLMap = {
     rinkeby: 'https://rinkeby.etherscan.io/txs?a=',
@@ -103,7 +103,7 @@ const styles = theme => ({
         textAlign: 'center',
         marginRight: '4px'
     },
-})
+});
 
 class Transactions extends Component {
     constructor (props) {

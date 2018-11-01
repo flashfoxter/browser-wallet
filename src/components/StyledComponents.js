@@ -1,5 +1,4 @@
-import { withStyles, createMuiTheme } from '@material-ui/core/styles';
-import FilledInput from '@material-ui/core/FilledInput';
+import { createMuiTheme } from '@material-ui/core/styles';
 
 export const mainBorderRadius = '8px';
 export const mainColor = '#009d8b';
