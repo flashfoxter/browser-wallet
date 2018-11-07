@@ -184,7 +184,7 @@ class SimpleAccountSelector extends Component {
         return (
             <FormControl
                 variant="filled">
-                <InputLabel htmlFor="component-filled">Send to</InputLabel>
+                <InputLabel htmlFor="component-filled">Account</InputLabel>
                 <Select
                     variant='filled'
                     className={classes.selectInput}

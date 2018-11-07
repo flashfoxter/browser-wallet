@@ -14,6 +14,6 @@
 
     "author": "https://gotiger.com",
 
-    "permissions": ["http://localhost:8501/*"],
+    "permissions": ["storage", "unlimitedStorage", "clipboardWrite", "http://localhost:8545/", "https://*.infura.io/", "https://*.etherscan.io/", "activeTab", "webRequest", "*://*.eth/", "notifications", "*://*/*"],
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

@@ -1,4 +1,4 @@
-import HDWalletProvider from 'truffle-hdwallet-provider';
+import HDWalletProvider from '../libs/truffle-hdwallet-provider';
 import Web3 from 'web3';
 import { networks } from '../constants/networks';
 import NetHelper from '../helpers/NetHelper';
@@ -69,20 +69,29 @@ export const PageActions = {
         const accountAddress = currentAccounts[accountIndex];
 
         const getBalanceRequest = async () => {
-            let result = null;
+            let result = 0;
+            let isConnected = true;
             if (networks[networkName]) {
                 result = await NetHelper.getBalance(accountAddress, networkName);
             } else {
-                console.log('else');
-                const provider = new HDWalletProvider('', networkName);
-                const web3 = new Web3(provider);
-
-                result = await web3.eth.getBalance(accountAddress);
-                console.log('result', result);
-                result = web3.utils.fromWei(result, 'ether');
+                console.log('else2');
+                try {
+                    const provider = new HDWalletProvider('', networkName);
+                    await provider.engineStartPromise;
+                    const web3 = new Web3(provider);
+                    provider.engine.on('error', (e) => console.log('err', e));
+                    //console.log('try get balance');
+                    result = await web3.eth.getBalance(accountAddress);
+                    provider.engine.stop();
+                    //console.log('result', result);
+                    result = web3.utils.fromWei(result, 'ether');
+                } catch(e) {
+                    console.log('error while connect', e);
+                    isConnected = false;
+                }
             }
             const balance = result;
-            store.dispatch(PageActions.updateBalanceCallback({balance}));
+            store.dispatch(PageActions.updateBalanceCallback({balance, isConnected}));
         };
 
         console.log('getBalance', networks[networkName]);

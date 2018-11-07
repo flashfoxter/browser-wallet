@@ -17,8 +17,6 @@ import { theme } from './StyledComponents';
 class App extends Component {
     constructor (props) {
         super(props);
-
-        console.log('props:', props);
     }
 
     render() {

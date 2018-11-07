@@ -99,6 +99,13 @@ const styles = theme => ({
         right: '20px',
         color: '#009d8b'
     },
+    textLine: {
+        textOverflow: 'ellipsis',
+        width: '170px',
+        overflow: 'hidden',
+        display: 'inline-block',
+        float: 'right'
+    },
     selectedIconWithDelete: {
         fontSize: '18px',
         float: 'right',
@@ -128,6 +135,11 @@ const NetworkType = {
 
 const DEFAULT_NETWORK_ITEMS = [
     {
+        value: networks.mainnet,
+        label: 'Main Ethereum Network',
+        type: NetworkType.basic
+    },
+    {
         value: networks.rinkeby,
         label: 'Rinkeby Test Network',
         type: NetworkType.basic
@@ -140,11 +152,6 @@ const DEFAULT_NETWORK_ITEMS = [
     {
         value: networks.ropsten,
         label: 'Ropsten Test Network',
-        type: NetworkType.basic
-    },
-    {
-        value: networks.mainnet,
-        label: 'Main Ethereum Network',
         type: NetworkType.basic
     }
 ];
@@ -193,9 +200,7 @@ class MainHeader extends Component {
     handleOnClose(event) {
 
         const tagName = event.target.tagName.toLowerCase();
-        console.log(event.target.className);
         const className = typeof event.target.className === 'string' ? event.target.className.toLowerCase() : '';
-        console.log('onClose', event.target, tagName, className);
         if (tagName === 'div' && className.indexOf('muibackdrop') > -1) {
             this.setState({menuOpen: false});
         }
@@ -221,7 +226,7 @@ class MainHeader extends Component {
         return   (<span><span className={classes.iconContainer} style={{color}}>
                         <Lens color='inherit' fontSize='inherit'/>
                     </span>
-            {itemDesc.label}</span>)
+            <span className={classes.textLine}>{itemDesc.label}</span></span>)
     }
 
     customNetworkDelete(event, itemDesc) {
@@ -268,6 +273,13 @@ class MainHeader extends Component {
         }
     }
 
+    onNetworkKeyPress(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            this.customNetworkBlur(event);
+        }
+    }
+
     render() {
         const {classes} = this.props;
 
@@ -303,7 +315,7 @@ class MainHeader extends Component {
                         <Lens color='inherit' fontSize='inherit'/>
                     </span>
 
-                    {itemDesc.label}
+                    <span className={classes.textLine}>{itemDesc.label}</span>
                     {deleteIcon}
                     {selectedIcon}
                 </MenuItem>
@@ -321,6 +333,7 @@ class MainHeader extends Component {
 
                     <InputBase className={classes.margin} value={this.state.customNetwork}
                                autoFocus={true}
+                               onKeyPress={this.onNetworkKeyPress.bind(this)}
                                onChange={event => this.setState({customNetwork: event.target.value})}
                                onBlur={this.customNetworkBlur.bind(this)}
                     />

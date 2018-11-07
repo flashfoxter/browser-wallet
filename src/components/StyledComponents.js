@@ -2,7 +2,7 @@ import { createMuiTheme } from '@material-ui/core/styles';
 
 export const mainBorderRadius = '8px';
 export const mainColor = '#009d8b';
-const mainBackgroundColor = 'rgba(0, 0, 0, 0.03)';
+export const mainBackgroundColor = 'rgba(0, 0, 0, 0.03)';
 export const mainLightTextColor = 'rgba(0, 0, 0, 0.5)';
 export const bigElementWidth = '296px';
 export const bigElementHeight = '56px';
@@ -116,7 +116,8 @@ export const theme = createMuiTheme({
         },
         MuiButton: {
             root: {
-                color: mainColor
+                color: mainColor,
+                fontWeight: 600
             },
             contained: {
 

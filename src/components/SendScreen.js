@@ -67,7 +67,12 @@ const styles = theme => ({
     },
     dialogTitle: {
         fontSize: '20px',
-        whiteSpace: 'pre-wrap'
+        whiteSpace: 'pre-wrap',
+        fontWeight: 600
+    },
+    dialogContent: {
+        margin: '0 24px',
+        padding: 0
     }
 });
 
@@ -108,8 +113,8 @@ class SendScreen extends Component {
         if (networks[networkName]) {
             networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
         }
-        const provider = new HDWalletProvider('', networkUri);
-        this.testWeb3 = new Web3(provider);
+        this.provider = new HDWalletProvider('', networkUri);
+        this.testWeb3 = new Web3(this.provider);
         console.log('w3', this.testWeb3, networkUri);
         this.gasPrice = 1000000000;
         this.updateGasPrice()
@@ -124,11 +129,12 @@ class SendScreen extends Component {
 
         let commission = this.testWeb3.utils.fromWei(commissionBN, 'ether');
         this.setState({commission: commission});
+        this.provider.engine.stop();
         console.log('currentGasPrice', this.gasPrice);
     }
 
     async sendTo(event) {
-
+        event.preventDefault();
         const toAddress = this.state.address.value;
         const {currentAccounts, accountIndex} = this.props.accounts;
         const {balance, networkName} = this.props.wallet;
@@ -136,11 +142,6 @@ class SendScreen extends Component {
         const accountAddress = currentAccounts[accountIndex];
 
         let isValid = true;
-
-        if (!Web3.utils.isAddress(toAddress)) {
-            this.fields.login.error = 'Destination address is not valid';
-            isValid = false;
-        }
 
         const amount = parseFloat(this.state.amount.value);
         if (Number.isNaN(amount)) {
@@ -154,23 +155,28 @@ class SendScreen extends Component {
             isValid = false;
         }
 
+        if (!Web3.utils.isAddress(this.state.address.value)) {
+            this.fields.address.error = 'Invalid address';
+            isValid = false;
+        }
+
         const data = AuthHelper.getUserDataFormStorage(this.props.accounts.currentLogin, this.state.password.value);
         if (!data) {
             this.fields.password.error = 'Password is invalid';
             isValid = false;
         }
 
-        const transactionObject = {
-            from: accountAddress,
-            to: toAddress,
-            gasPrice: this.gasPrice,
-            gas: DEFAULT_GASLIMIT,
-            value: Web3.utils.toWei(this.state.amount.value, 'ether')
-        };
-
         if (isValid) {
             // connect
             let web3 = null;
+
+            const transactionObject = {
+                from: accountAddress,
+                to: toAddress,
+                gasPrice: this.gasPrice,
+                gas: DEFAULT_GASLIMIT,
+                value: Web3.utils.toWei(this.state.amount.value, 'ether')
+            };
 
             // authorize by mnemonic
             if (typeof data === 'string') {
@@ -347,11 +353,12 @@ class SendScreen extends Component {
                     </Grid>
                     <Grid
                         container
-                        style={{ paddingTop: '32px' }}
+                        style={{ padding: '32px 0' }}
                         justify='center'>
                         <Button variant='contained'
                                 color='secondary'
                                 size='large'
+                                type='submit'
                                 onClick={this.sendTo.bind(this)}>Send</Button>
                     </Grid>
                 </form>
@@ -381,13 +388,13 @@ class SendScreen extends Component {
                             {this.state.dialogueTitle}
                         </Typography>
                     </DialogTitle>
-                    <DialogContent>
+                    <DialogContent className={classes.dialogContent}>
                         <Typography className={classes.dialogText}>
                             {this.state.dialogueMessage}
                         </Typography>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={this.handleClose.bind(this)} color="primary" autoFocus>
+                        <Button onClick={this.handleClose.bind(this)} color="secondary" autoFocus>
                             OK
                         </Button>
                     </DialogActions>

@@ -55,11 +55,19 @@ const styles = theme => ({
         color: '#000',
         fontSize: theme.typography.pxToRem(12),
     },
+    transactionsTitle: {
+        fontSize: theme.typography.pxToRem(20),
+        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+        fontWeight: 500
+    },
     expansionPanel: {
         width: '100%',
         backgroundColor: 'rgba(0, 0, 0, 0.05)',
         borderRadius: '6px',
-        boxShadow: 'none'
+        boxShadow: 'none',
+        '&:first-child': {
+            borderRadius: '6px'
+        }
     },
     expansionSummary: {
         width: '100%',
@@ -212,7 +220,6 @@ class Transactions extends Component {
 
                                 historyData.push(transactionInfo);
                             });
-                            console.log('historyData', historyData);
                         }
                     }
 
@@ -303,7 +310,7 @@ class Transactions extends Component {
 
             return (
                 <Grid container key={transaction.transactionHash}
-                         style={{padding: '16px 16px 0 16px'}}
+                         style={{padding: '0 16px 16px 16px'}}
                          justify='center'>
                     <ExpansionPanel className={classes.expansionPanel}>
                         <ExpansionPanelSummary classes={{content: classes.expansionSummary}}
@@ -346,7 +353,7 @@ class Transactions extends Component {
             <Grid container style={{paddingTop: '16px'}}>
                 <Grid container
                     justify='center'>
-                    <Typography variant='h6'>Transaction History</Typography>
+                    <Typography variant='h6' className={classes.transactionsTitle}>Transaction History</Typography>
                 </Grid>
                 <Grid container
                       justify='center'>
