@@ -19,6 +19,7 @@ import Visibility from '../../node_modules/@material-ui/icons/Visibility';
 import VisibilityOff from '../../node_modules/@material-ui/icons/VisibilityOff';
 import { PageActions } from '../actions/index';
 import AuthHelper from '../helpers/AuthHelper';
+import NetHelper from '../helpers/NetHelper';
 import InputFieldInState from '../models/InputFieldInState';
 import { ScreenNames } from '../reducers/screen';
 import GoMainHeader from './GoMainHeader';
@@ -48,6 +49,7 @@ class ContractScreen extends Component {
         };
 
         this.account = null;
+        this.abiMethods = null;
 
         this.payload = null;
     }
@@ -64,9 +66,13 @@ class ContractScreen extends Component {
                     let abiFileError = '';
                     try {
                         console.log('contract content', contractAbi);
+                        this.abiMethods = NetHelper.readAbi(contractAbi);
+                        if (!this.abiMethods) {
+                            throw new Error('invalid abi file');
+                        }
                         const web3 = new Web3();
                         this.contractData = new web3.eth.Contract(JSON.parse(contractAbi));
-                        console.log('contract content', this.contractData);
+                        console.log('contract content', this.contractData, this.abiMethods);
                     } catch(e) {
                         console.log('error while readPK', e);
                         this.contractData = null;
