@@ -8,7 +8,8 @@ export const ScreenNames = {
     'SIGN_UP_KEYS': 'SIGN_UP_KEYS',
     'MAIN_SCREEN': 'MAIN_SCREEN',
     'ABOUT_SCREEN': 'ABOUT_SCREEN',
-    'SEND_SCREEN': 'SEND_SCREEN'
+    'SEND_SCREEN': 'SEND_SCREEN',
+    'CONTRACT_SCREEN': 'CONTRACT_SCREEN'
 };
 
 const initialState = {

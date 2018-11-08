@@ -63,20 +63,63 @@ export default {
         console.log(response);
         return response;
     },
-    async getBalanceCustomRpc(uri, address, network) {
-        const requestURI = 'https://api.infura.io/v1/jsonrpc/'
-            + network + '/eth_getBalance?params=[%22'
-            + address + '%22,%22latest%22]';
+    readAbi(jsonString) {
+        let unnamed = 0;
+        const checkMethodDesk = function(methodDesc) {
+            let isValid = true;
 
-        const getBlockRequest = {
-            id: 5311408654528138,
-            jsonrpc: "2.0",
-            method: "eth_getBlockByNumber",
-            params: ["latest", true]
+            try {
+                if (methodDesc['type'] && methodDesc['type'] === 'event') {
+                    isValid = isValid && methodDesc['name'];
+
+                } else {
+                    isValid = isValid && methodDesc['type']
+                        && ['function', 'constructor', 'fallback'].indexOf(methodDesc['type']) > -1;
+
+                    isValid = isValid && methodDesc['stateMutability']
+                        && ['view', 'nonpayable', 'payable'].indexOf(methodDesc['stateMutability']) > -1;
+
+                    if (isValid && methodDesc['name'] && methodDesc['type'] !== 'fallback') {
+                        if (methodDesc['inputs']) {
+                            methodDesc['inputs'].forEach(argDesc => {
+                                isValid = isValid && argDesc['name'];
+                                isValid = isValid && argDesc['type'];
+                            });
+                        }
+                    } else {
+                        unnamed++;
+                        isValid = isValid && unnamed === 1;
+                        isValid = isValid && methodDesc['inputs'].length === 0;
+                        isValid = isValid && methodDesc['outputs'].length === 0;
+                    }
+                }
+            } catch(e) {
+                isValid = false;
+            }
+
+            return isValid;
         };
-        const response = await this.httpRequest(requestURI);
-        const jsonResponse = JSON.parse(response);
+        try {
+            const AbiMethodsDesc = JSON.parse(jsonString);
+            const methodsObj = {};
+            if (!Array.isArray(AbiMethodsDesc)) {
+                return false;
+            }
 
-        return Web3.utils.fromWei(jsonResponse.result, 'ether');
-    },
+            AbiMethodsDesc.forEach(methodDesc => {
+                if (checkMethodDesk(methodDesc)) {
+                    let name = methodDesc['name'];
+                    if (!name) {
+                        name = 'default'
+                    }
+
+                    methodsObj[name] = methodDesc;
+                }
+
+            });
+            return methodsObj;
+        } catch(e) {
+            return false;
+        }
+    }
 };

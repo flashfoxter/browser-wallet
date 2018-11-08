@@ -66,8 +66,9 @@ class MainScreen extends Component {
                                 disabled={!this.props.wallet.isConnected}
                                 onClick={this.props.pageActions.changeScreen.bind(this, ScreenNames.SEND_SCREEN)}
                                 size='small'
-                                type='submit'
-                                >Send</Button>
+                                type='submit'>
+                            Send
+                        </Button>
                     </Grid>
                     <Grid item xs={6} style={{paddingLeft: '12px'}}
                           container
@@ -76,9 +77,11 @@ class MainScreen extends Component {
                         <Button variant='contained'
                                 color='secondary'
                                 disabled={!this.props.wallet.isConnected}
+                                onClick={this.props.pageActions.changeScreen.bind(this, ScreenNames.CONTRACT_SCREEN)}
                                 size='small'
-                                type='submit'
-                                >Contract</Button>
+                                type='submit'>
+                            Contract
+                        </Button>
                     </Grid>
                 </Grid>
                 <Transactions/>
