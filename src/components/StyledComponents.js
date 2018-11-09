@@ -75,6 +75,9 @@ export const theme = createMuiTheme({
                 //    backgroundColor: mainBackgroundColor
                 //}
             },
+            multiline: {
+                height: 'auto'
+            },
             underline: {
                 borderBottom: '0',
                 '&:before': {

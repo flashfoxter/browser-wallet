@@ -136,7 +136,8 @@ class ContractScreen extends Component {
             abiFileName: '',
             abiFileError: '',
             abiMethods: [],
-            methodName: ''
+            methodName: '',
+            lastResult: ''
         };
 
         this.fields = {
@@ -144,11 +145,28 @@ class ContractScreen extends Component {
             password: new InputFieldInState({}, FieldNames.password, this)
         };
 
+        this.inputFields = [];
+
         this.account = null;
         this.abiMethods = [];
         this.abiData = {};
 
         this.payload = null;
+    }
+
+    updateInputs(methodName) {
+        const {abiMethods} = this.state;
+        if (methodName) {
+            this.inputFields = abiMethods[methodName].inputs.map((inputDef, ind) => {
+                return {
+                    name: inputDef.name,
+                    key: 'input_' + methodName + ind,
+                    value: '',
+                    error: '',
+                    label: (inputDef.name ? inputDef.name : 'input') + ' ' + inputDef.type + ' (json)'
+                };
+            });
+        }
     }
 
     fileABIHandler(event) {
@@ -174,6 +192,7 @@ class ContractScreen extends Component {
 
                         const methodName = Object.keys(this.abiMethods)[0];
                         this.setState({abiMethods: this.abiMethods, methodName});
+                        this.updateInputs(methodName);
                     } catch(e) {
                         console.log('error while readPK', e);
                         this.contractData = null;
@@ -268,6 +287,7 @@ class ContractScreen extends Component {
 
     handleChangeMethod(event) {
         this.setState({openSelectDialog: false, methodName: event.target.value});
+        this.updateInputs(event.target.value);
     }
 
     async callMethod(event) {
@@ -291,6 +311,16 @@ class ContractScreen extends Component {
             isValid = false;
         }
 
+        const args = this.inputFields.map(inputDef => {
+            let data = null;
+            try {
+                data = JSON.parse(inputDef.value);
+            } catch(e) {
+                isValid = false;
+            }
+            return data;
+        });
+
         if (isValid) {
             // connect
             let web3 = null;
@@ -300,6 +330,7 @@ class ContractScreen extends Component {
             };
 
             // authorize by mnemonic
+            let onEnd = () => {};
             if (typeof data === 'string') {
                 let networkUri = networkName;
                 if (networks[networkName]) {
@@ -307,6 +338,7 @@ class ContractScreen extends Component {
                 }
 
                 const provider = new HDWalletProvider(data, networkUri, 0, 10);
+                onEnd = () => {provider.engine.stop()};
                 web3 = new Web3(provider);
 
                 web3.eth.defaultAccount = accountAddress;
@@ -327,24 +359,17 @@ class ContractScreen extends Component {
                 const methodInfo = this.abiMethods[this.state.methodName];
                 let transactionInfo = null;
                 if (methodInfo['stateMutability'] === 'view') {
-                    transactionInfo = await contract.methods[this.state.methodName]().call(optionsObject);
+
+                    transactionInfo = await contract.methods[this.state.methodName]
+                        .apply(contract, args).call(optionsObject);
                 } else {
-                    transactionInfo = await contract.methods[this.state.methodName]().send(optionsObject);
+                    transactionInfo = await contract.methods[this.state.methodName]
+                        .apply(contract, args).send(optionsObject);
                 }
 
                 console.log('TransactionInfo:', transactionInfo);
 
-                //show dialog
-                //const amount = this.state.amount.value;
-                //const hash = transactionInfo.transactionHash;
-/*
-                this.setState({
-                    openDialogue: true,
-                    completedSuccessful: true,
-                    dialogueTitle: 'You successfully\nmake a transaction:',
-                    dialogueMessage: "Send to: \n" + toAddress
-                        + "\nAmount: " + amount + " ETH\nTransactionHash\n" + hash
-                });*/
+
             } catch (error) {
                 console.log('TransactionError:', error);
                 //show dialog with error
@@ -354,6 +379,7 @@ class ContractScreen extends Component {
                     dialogueMessage: "Error description:\n" + error.message
                 });*/
             }
+            onEnd();
             this.setState({sendInProgress: false});
             //this.props.pageActions.getBalance();
 
@@ -391,7 +417,32 @@ class ContractScreen extends Component {
             );
         });
 
-        const inputFields = null;
+        let inputFields = null;
+
+        if (methodName) {
+            const methodDesc = abiMethods[methodName];
+            inputFields = this.inputFields.map((inputDesc, ind) => {
+                return <Grid
+                    key={inputDesc.key}
+                    container
+                    style={{ paddingTop: '32px' }}
+                    justify='center'>
+                    <FormControl
+                        variant="filled"
+                        error={!!inputDesc.error}>
+                        <InputLabel htmlFor="component-filled">{inputDesc.label}</InputLabel>
+                        <FilledInput id="component-filled"
+                                     multiline
+                                     value={inputDesc.value}
+                                     onChange={event => {inputDesc.value = event.target.value;this.forceUpdate()}} />
+                        {inputDesc.error
+                            ? <FormHelperText>{inputDesc.error}</FormHelperText>
+                            : null
+                        }
+                    </FormControl>
+                </Grid>
+            });
+        }
 
 
         return (
@@ -486,6 +537,7 @@ class ContractScreen extends Component {
                             }
                         </FormControl>
                     </Grid>
+                    {inputFields}
                     <Grid
                         container
                         style={{ paddingTop: '32px' }}
