@@ -59,6 +59,8 @@ export const theme = createMuiTheme({
                 width: bigElementWidth,
                 height: '56px',
                 borderRadius: mainBorderRadius,
+                borderTopLeftRadius: mainBorderRadius,
+                borderTopRightRadius: mainBorderRadius,
                 color: '#000000',
                 '&:hover': {
                     backgroundColor: mainBackgroundColor
