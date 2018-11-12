@@ -1,4 +1,4 @@
-# Google Chrome Ethereum Wallet
+# Chrome Tiger Ethereum Wallet
 ![Dashboard](https://github.com/tigerdevpool/browser-wallet/blob/master/screenshots/Dashboard.PNG)
 
 # Features
