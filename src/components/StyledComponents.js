@@ -2,7 +2,7 @@ import { createMuiTheme } from '@material-ui/core/styles';
 
 export const mainBorderRadius = '8px';
 export const mainColor = '#009d8b';
-const mainBackgroundColor = 'rgba(0, 0, 0, 0.03)';
+export const mainBackgroundColor = 'rgba(0, 0, 0, 0.03)';
 export const mainLightTextColor = 'rgba(0, 0, 0, 0.5)';
 export const bigElementWidth = '296px';
 export const bigElementHeight = '56px';
@@ -59,6 +59,8 @@ export const theme = createMuiTheme({
                 width: bigElementWidth,
                 height: '56px',
                 borderRadius: mainBorderRadius,
+                borderTopLeftRadius: mainBorderRadius,
+                borderTopRightRadius: mainBorderRadius,
                 color: '#000000',
                 '&:hover': {
                     backgroundColor: mainBackgroundColor
@@ -72,6 +74,9 @@ export const theme = createMuiTheme({
                 //'&$error': {
                 //    backgroundColor: mainBackgroundColor
                 //}
+            },
+            multiline: {
+                height: 'auto'
             },
             underline: {
                 borderBottom: '0',
@@ -116,7 +121,8 @@ export const theme = createMuiTheme({
         },
         MuiButton: {
             root: {
-                color: mainColor
+                color: mainColor,
+                fontWeight: 600
             },
             contained: {
 

@@ -10,7 +10,6 @@ import { ScreenNames } from '../reducers/screen';
 import GoMainHeader from './GoMainHeader';
 import { mainColor } from './StyledComponents';
 
-// f7
 const styles = theme => ({
     container: {
         display: 'flex',
@@ -50,9 +49,7 @@ class AboutScreen extends Component {
                 <Grid
                     container
                     justify='center'>
-                    <Typography variant="h6" color='secondary'>
-                        Tiger Ethereum Wallet
-                    </Typography>
+                    <img src='./icons/logo-text.svg' style={{width: 280, height: 32}}/>
                 </Grid>
                 <Grid
                     className={classes.contentBlock}

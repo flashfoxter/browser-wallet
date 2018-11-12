@@ -23,7 +23,6 @@ import InputFieldInState from '../models/InputFieldInState';
 import { ScreenNames } from '../reducers/screen';
 import GoMainHeader from './GoMainHeader';
 
-console.log('web3', Web3);
 const FieldNames = {
     mnemonic: 'mnemonic',
     login: 'login',
@@ -53,7 +52,8 @@ class SignUpPrivateKeyScreen extends Component {
         this.payload = null;
     }
 
-    signUp() {
+    signUp(event) {
+        event.preventDefault();
         let isValid = true;
 
         if (!this.account) {
@@ -87,7 +87,6 @@ class SignUpPrivateKeyScreen extends Component {
             };
 
             this.setState({openDialogue: true});
-            console.log('isValid Form', this.payload);
         } else {
             const payload = {
                 account: this.account,
@@ -95,7 +94,6 @@ class SignUpPrivateKeyScreen extends Component {
                 password: this.fields.password.error
             };
 
-            console.log('inValid Form', payload);
         }
     }
 
@@ -112,13 +110,11 @@ class SignUpPrivateKeyScreen extends Component {
                     try {
                         const web3 = new Web3();
                         this.account = web3.eth.accounts.privateKeyToAccount(privateKey);
-                        console.log(this.account);
                     } catch(e) {
-                        console.log('error while readPK', e);
                         this.account = null;
                         fileError = 'Selected file does not contain the correct privateKey';
                     }
-                    console.log('afterSelect:', fileError, theFile.name);
+
                     this.setState({fileName: theFile.name, fileError});
 
                 };
@@ -131,7 +127,6 @@ class SignUpPrivateKeyScreen extends Component {
     }
 
     clickToSelectFile(event) {
-        console.log('event', event, this.refs.pk);
         this.refs.pk.click();
     }
 
@@ -158,100 +153,103 @@ class SignUpPrivateKeyScreen extends Component {
                 <GoMainHeader screenName={ScreenNames.SIGN_IN_SCREEN}>
                     Sign Up
                 </GoMainHeader>
-                <Grid
-                    container
-                    style={{ padding: '24px 32px 12px 32px' }}
-                    size='small'
-                    justify='center'>
+                <form onSubmit={this.signUp.bind(this)} style={{width: '100%'}}>
                     <Grid
                         container
-                        justify='flex-start'
-                        item xs={6}>
-                        <Button variant='outlined' onClick={this.clickToSelectFile.bind(this)}>+ Private key</Button>
-                    </Grid>
-                    <Grid
-                        container
-                        justify='flex-start'
-                        alignItems='center'
-                        style={{paddingLeft: '12px'}}
-                        item xs={6}>
-                        <input ref='pk' type='file' onChange={this.fileHandler.bind(this)}
-                               style={{width:'1px', height:'1px', overflow:'hidden', visibility: 'hidden'}}
-                        />
-                        <Typography noWrap style={{maxWidth: '125px'}}>
-                            {this.state.fileName}
-                        </Typography>
-                    </Grid>
-                </Grid>
-                {
-                    this.state.fileError
-                        ? <Grid
+                        style={{ padding: '24px 32px 12px 32px' }}
+                        size='small'
+                        justify='center'>
+                        <Grid
                             container
-                            style={{ padding: '0 32px 0 32px', borderTop: '1px solid #b00020' }}
-                            size='small'
-                            justify='center'>
-                            <Typography style={{color: '#b00020', fontSize: '12px'}}>
-                                {this.state.fileError}
+                            justify='flex-start'
+                            item xs={6}>
+                            <Button variant='outlined' onClick={this.clickToSelectFile.bind(this)}>+ Private key</Button>
+                        </Grid>
+                        <Grid
+                            container
+                            justify='flex-start'
+                            alignItems='center'
+                            style={{paddingLeft: '12px'}}
+                            item xs={6}>
+                            <input ref='pk' type='file' onChange={this.fileHandler.bind(this)}
+                                   style={{width:'1px', height:'1px', overflow:'hidden', visibility: 'hidden'}}
+                            />
+                            <Typography noWrap style={{maxWidth: '125px'}}>
+                                {this.state.fileName}
                             </Typography>
-                          </Grid>
-                        : null
-                }
-                <Grid
-                    container
-                    style={{ paddingTop: '24px' }}
-                    justify='center'>
-                    <FormControl
-                        variant="filled"
-                        error={!!this.state.login.error}>
-                        <InputLabel htmlFor="component-filled-login">Login</InputLabel>
-                        <FilledInput id="component-filled-login"
-                                     value={this.state.login.value}
-                                     onChange={event => this.setValue(event, FieldNames.login)} />
-                        {this.state.login.error
-                            ? <FormHelperText>{this.state.login.error}</FormHelperText>
+                        </Grid>
+                    </Grid>
+                    {
+                        this.state.fileError
+                            ? <Grid
+                                container
+                                style={{ padding: '0 32px 0 32px', borderTop: '1px solid #b00020' }}
+                                size='small'
+                                justify='center'>
+                                <Typography style={{color: '#b00020', fontSize: '12px'}}>
+                                    {this.state.fileError}
+                                </Typography>
+                              </Grid>
                             : null
-                        }
-                    </FormControl>
-                </Grid>
-                <Grid
-                    container
-                    style={{ paddingTop: '32px' }}
-                    justify='center'>
-                    <FormControl
-                        variant="filled"
-                        error={!!this.state.password.error}>
-                        <InputLabel htmlFor="component-filled-password">Password</InputLabel>
-                        <FilledInput id="component-filled-password"
-                                     value={this.state.password.value}
-                                     type={this.state.showPassword ? 'text' : 'password'}
-                                     onChange={event => this.setValue(event, FieldNames.password)}
-                                     endAdornment={
-                                         (
-                                             <InputAdornment position="end">
-                                                 <IconButton
-                                                     aria-label="Toggle password visibility"
-                                                     onClick={this.handleClickShowPassword.bind(this)}>
+                    }
+                    <Grid
+                        container
+                        style={{ paddingTop: '24px' }}
+                        justify='center'>
+                        <FormControl
+                            variant="filled"
+                            error={!!this.state.login.error}>
+                            <InputLabel htmlFor="component-filled-login">Login</InputLabel>
+                            <FilledInput id="component-filled-login"
+                                         value={this.state.login.value}
+                                         onChange={event => this.setValue(event, FieldNames.login)} />
+                            {this.state.login.error
+                                ? <FormHelperText>{this.state.login.error}</FormHelperText>
+                                : null
+                            }
+                        </FormControl>
+                    </Grid>
+                    <Grid
+                        container
+                        style={{ paddingTop: '32px' }}
+                        justify='center'>
+                        <FormControl
+                            variant="filled"
+                            error={!!this.state.password.error}>
+                            <InputLabel htmlFor="component-filled-password">Password</InputLabel>
+                            <FilledInput id="component-filled-password"
+                                         value={this.state.password.value}
+                                         type={this.state.showPassword ? 'text' : 'password'}
+                                         onChange={event => this.setValue(event, FieldNames.password)}
+                                         endAdornment={
+                                             (
+                                                 <InputAdornment position="end">
+                                                     <IconButton
+                                                         aria-label="Toggle password visibility"
+                                                         onClick={this.handleClickShowPassword.bind(this)}>
 
-                                                     {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
-                                                 </IconButton>
-                                             </InputAdornment>
-                                         )
-                                     }/>
-                        {this.state.password.error
-                            ? <FormHelperText id="component-error-text">{this.state.password.error}</FormHelperText>
-                            : null
-                        }
-                    </FormControl>
-                </Grid>
-                <Grid
-                    container
-                    style={{ paddingTop: '32px' }}
-                    justify='center'>
-                    <Button variant='contained'
-                            color='secondary'
-                            size='large'
-                            onClick={this.signUp.bind(this)}>Sign Up</Button>
-                </Grid>
+                                                         {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
+                                                     </IconButton>
+                                                 </InputAdornment>
+                                             )
+                                         }/>
+                            {this.state.password.error
+                                ? <FormHelperText id="component-error-text">{this.state.password.error}</FormHelperText>
+                                : null
+                            }
+                        </FormControl>
+                    </Grid>
+                    <Grid
+                        container
+                        style={{ paddingTop: '32px' }}
+                        justify='center'>
+                        <Button variant='contained'
+                                color='secondary'
+                                size='large'
+                                type='submit'
+                                onClick={this.signUp.bind(this)}>Sign Up</Button>
+                    </Grid>
+                </form>
                 <Dialog
                     open={this.state.openDialogue}
                     onClose={this.handleClose.bind(this)}

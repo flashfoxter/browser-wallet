@@ -22,7 +22,6 @@ export const createStoredReducer = (reducer, reducerName, initialState) => {
             const stateChanged = state !== newState;
 
             if (stateChanged) {
-                console.log('updateReducer state', stateChanged, reducerName, action);
                 localStorage.setItem(key, JSON.stringify(newState));
             }
 

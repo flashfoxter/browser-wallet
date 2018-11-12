@@ -1,3 +1,7 @@
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
 import Grid from '@material-ui/core/Grid';
 import InputBase from '@material-ui/core/InputBase';
 import Popover from '@material-ui/core/Popover/Popover';
@@ -13,8 +17,10 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { PageActions } from '../actions/index';
 import Copy from './icons/Copy';
+import QRIcon from './icons/QRCodeIcon';
+import QRCode from './QRCode';
 
-console.log('copyText', copyText)
+
 const styles = theme => ({
     container: {
         display: 'flex',
@@ -115,13 +121,13 @@ class AccountSelector extends Component {
             menuOpen: false,
             selectElement: null,
             popoverOpen: false,
-            popoverAnchorEl: null
+            popoverAnchorEl: null,
+            qrCodeModalOpen: false
         };
         this.selectedElement = null;
     }
 
     handleOnOpen(event) {
-        //console.log('menu element: ', event.target, this.selectedElement, ReactDOM.findDOMNode(this.selectedElement));
         this.setState({menuOpen: true});
     }
 
@@ -132,6 +138,14 @@ class AccountSelector extends Component {
         if (tagName === 'div' && className.indexOf('muibackdrop') > -1) {
             this.setState({menuOpen: false});
         }
+    }
+
+    handleOnCloseQR() {
+        this.setState({qrCodeModalOpen: false});
+    }
+
+    handleOnOpenQR() {
+        this.setState({qrCodeModalOpen: true});
     }
 
     handleChange(event) {
@@ -232,12 +246,16 @@ class AccountSelector extends Component {
                 <Grid container
                       className={classes.accountAddress}
                       justify='center'>
-                    <Typography noWrap={true} style={{width: '205px', fontSize: '12px'}}
+                    <Typography noWrap={true} style={{width: '200px', fontSize: '12px'}}
                                 onClick={this.copyAddress.bind(this)}
                                 color='inherit'>{accountAddress}</Typography>
                     <span className={classes.iconContainer}
                         onClick={this.copyAddress.bind(this)}>
                         <Copy color='inherit' fontSize='inherit'/>
+                    </span>
+                    <span className={classes.iconContainer}
+                          onClick={this.handleOnOpenQR.bind(this)}>
+                        <QRIcon color='inherit' fontSize='inherit'/>
                     </span>
                     <Popover
                         id="simple-popper"
@@ -254,6 +272,18 @@ class AccountSelector extends Component {
                     >
                         <Typography className={classes.typography}>Address was copied to clipboard</Typography>
                     </Popover>
+                    <Dialog
+                        open={this.state.qrCodeModalOpen}
+                        onClose={this.handleOnCloseQR.bind(this)}>
+                        <DialogContent>
+                            <QRCode value={accountAddress} size={210} level='Q'/>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={this.handleOnCloseQR.bind(this)} color="secondary" autoFocus>
+                                OK
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
                 </Grid>
             </Grid>
 

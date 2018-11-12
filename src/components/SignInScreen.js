@@ -48,7 +48,6 @@ class SignInScreen extends Component {
             login: new InputFieldInState({}, FieldNames.login, this),
             password: new InputFieldInState({}, FieldNames.password, this)
         };
-        console.log('props:', props);
     }
 
     signIn(event) {
@@ -70,7 +69,6 @@ class SignInScreen extends Component {
         if (isValid) {
             const data = AuthHelper.getUserDataFormStorage(login, password);
 
-            console.log('isValid Form data is:', data);
             if (data) {
                 // do login
                 // get accounts
@@ -92,8 +90,6 @@ class SignInScreen extends Component {
                 login: this.fields.login.error,
                 password: this.fields.password.error
             };
-
-            console.log('inValid Form', payload);
         }
     }
 
@@ -122,9 +118,7 @@ class SignInScreen extends Component {
                     <Grid
                         container
                         justify='center'>
-                        <Typography variant="h6" color='secondary'>
-                            Tiger Ethereum Wallet
-                        </Typography>
+                        <img src='./icons/logo-text.svg' style={{width: 280, height: 32}}/>
                     </Grid>
                     <Grid
                         container

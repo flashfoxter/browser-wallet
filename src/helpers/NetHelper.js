@@ -60,7 +60,23 @@ export default {
         const requestURI = domain + '/api?module=account&action=txlist&address='
                 + address + '&startblock=0&endblock=99999999&sort=asc&apikey=' + ETHERSCAN_TOKEN;
         const response = JSON.parse(await this.httpRequest(requestURI));
-        console.log(response);
+
         return response;
-    }
+    },
+    async getBalanceCustomRpc(uri, address, network) {
+        const requestURI = 'https://api.infura.io/v1/jsonrpc/'
+            + network + '/eth_getBalance?params=[%22'
+            + address + '%22,%22latest%22]';
+
+        const getBlockRequest = {
+            id: 5311408654528138,
+            jsonrpc: "2.0",
+            method: "eth_getBlockByNumber",
+            params: ["latest", true]
+        };
+        const response = await this.httpRequest(requestURI);
+        const jsonResponse = JSON.parse(response);
+
+        return Web3.utils.fromWei(jsonResponse.result, 'ether');
+    },
 };

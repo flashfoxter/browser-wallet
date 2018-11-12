@@ -48,7 +48,8 @@ class SignUpMnemonicScreen extends Component {
         this.payload = null;
     }
 
-    signUp() {
+    signUp(event) {
+        event.preventDefault();
         let isValid = true;
 
         if (!this.state.mnemonic.value) {
@@ -73,7 +74,6 @@ class SignUpMnemonicScreen extends Component {
         }
 
         if (isValid) {
-            console.log('isValid Form');
             const accounts = AuthHelper.getAddressesFromMnemonic(this.state.mnemonic.value, 10);
 
             this.payload = {
@@ -84,15 +84,12 @@ class SignUpMnemonicScreen extends Component {
             };
 
             this.setState({openDialogue: true});
-            console.log('isValid Form', this.payload);
         } else {
             const payload = {
                 mnemonic: this.fields.mnemonic.error,
                 login: this.fields.login.error,
                 password: this.fields.password.error
             };
-
-            console.log('inValid Form', payload);
         }
     }
 
@@ -125,86 +122,90 @@ class SignUpMnemonicScreen extends Component {
                 <GoMainHeader screenName={ScreenNames.SIGN_IN_SCREEN}>
                     Sign Up
                 </GoMainHeader>
-                <Grid
-                    container
-                    style={{ paddingTop: '32px' }}
-                    justify='center'>
-                    <FormControl
-                        variant="filled"
-                        error={!!this.state.mnemonic.error}>
-                        <InputLabel htmlFor="component-filled-mnemonic">Mnemonic</InputLabel>
-                        <FilledInput id="component-filled-mnemonic"
-                                     value={this.state.mnemonic.value}
-                                     onChange={event => this.setValue(event, FieldNames.mnemonic)} />
-                        {this.state.mnemonic.error
-                            ? <FormHelperText>{this.state.mnemonic.error}</FormHelperText>
-                            : null
-                        }
-                    </FormControl>
-                </Grid>
-                <Grid
-                    container
-                    style={{ paddingTop: '24px' }}
-                    size='small'
-                    justify='center'>
-                    <Button onClick={this.generateMnemonic.bind(this)}>Generate</Button>
-                </Grid>
-                <Grid
-                    container
-                    style={{ paddingTop: '32px' }}
-                    justify='center'>
-                    <FormControl
-                        variant="filled"
-                        error={!!this.state.login.error}>
-                        <InputLabel htmlFor="component-filled-login">Login</InputLabel>
-                        <FilledInput id="component-filled-login"
-                                     value={this.state.login.value}
-                                     onChange={event => this.setValue(event, FieldNames.login)} />
-                        {this.state.login.error
-                            ? <FormHelperText>{this.state.login.error}</FormHelperText>
-                            : null
-                        }
-                    </FormControl>
-                </Grid>
-                <Grid
-                    container
-                    style={{ paddingTop: '32px' }}
-                    justify='center'>
-                    <FormControl
-                        variant="filled"
-                        error={!!this.state.password.error}>
-                        <InputLabel htmlFor="component-filled-password">Password</InputLabel>
-                        <FilledInput id="component-filled-password"
-                                     value={this.state.password.value}
-                                     type={this.state.showPassword ? 'text' : 'password'}
-                                     onChange={event => this.setValue(event, FieldNames.password)}
-                                     endAdornment={
-                                         (
-                                             <InputAdornment position="end">
-                                                 <IconButton
-                                                     aria-label="Toggle password visibility"
-                                                     onClick={this.handleClickShowPassword.bind(this)}>
+                <form onSubmit={this.signUp.bind(this)} style={{width: '100%'}}>
+                    <Grid
+                        container
+                        style={{ paddingTop: '32px' }}
+                        justify='center'>
+                        <FormControl
+                            variant="filled"
+                            error={!!this.state.mnemonic.error}>
+                            <InputLabel htmlFor="component-filled-mnemonic">Mnemonic</InputLabel>
+                            <FilledInput id="component-filled-mnemonic"
+                                         value={this.state.mnemonic.value}
+                                         autoComplete="off"
+                                         onChange={event => this.setValue(event, FieldNames.mnemonic)} />
+                            {this.state.mnemonic.error
+                                ? <FormHelperText>{this.state.mnemonic.error}</FormHelperText>
+                                : null
+                            }
+                        </FormControl>
+                    </Grid>
+                    <Grid
+                        container
+                        style={{ paddingTop: '24px' }}
+                        size='small'
+                        justify='center'>
+                        <Button onClick={this.generateMnemonic.bind(this)}>Generate</Button>
+                    </Grid>
+                    <Grid
+                        container
+                        style={{ paddingTop: '32px' }}
+                        justify='center'>
+                        <FormControl
+                            variant="filled"
+                            error={!!this.state.login.error}>
+                            <InputLabel htmlFor="component-filled-login">Login</InputLabel>
+                            <FilledInput id="component-filled-login"
+                                         value={this.state.login.value}
+                                         onChange={event => this.setValue(event, FieldNames.login)} />
+                            {this.state.login.error
+                                ? <FormHelperText>{this.state.login.error}</FormHelperText>
+                                : null
+                            }
+                        </FormControl>
+                    </Grid>
+                    <Grid
+                        container
+                        style={{ paddingTop: '32px' }}
+                        justify='center'>
+                        <FormControl
+                            variant="filled"
+                            error={!!this.state.password.error}>
+                            <InputLabel htmlFor="component-filled-password">Password</InputLabel>
+                            <FilledInput id="component-filled-password"
+                                         value={this.state.password.value}
+                                         type={this.state.showPassword ? 'text' : 'password'}
+                                         onChange={event => this.setValue(event, FieldNames.password)}
+                                         endAdornment={
+                                             (
+                                                 <InputAdornment position="end">
+                                                     <IconButton
+                                                         aria-label="Toggle password visibility"
+                                                         onClick={this.handleClickShowPassword.bind(this)}>
 
-                                                     {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
-                                                 </IconButton>
-                                             </InputAdornment>
-                                         )
-                                     }/>
-                        {this.state.password.error
-                            ? <FormHelperText id="component-error-text">{this.state.password.error}</FormHelperText>
-                            : null
-                        }
-                    </FormControl>
-                </Grid>
-                <Grid
-                    container
-                    style={{ paddingTop: '32px' }}
-                    justify='center'>
-                    <Button variant='contained'
-                            color='secondary'
-                            size='large'
-                            onClick={this.signUp.bind(this)}>Sign Up</Button>
-                </Grid>
+                                                         {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
+                                                     </IconButton>
+                                                 </InputAdornment>
+                                             )
+                                         }/>
+                            {this.state.password.error
+                                ? <FormHelperText id="component-error-text">{this.state.password.error}</FormHelperText>
+                                : null
+                            }
+                        </FormControl>
+                    </Grid>
+                    <Grid
+                        container
+                        style={{ paddingTop: '32px' }}
+                        justify='center'>
+                        <Button variant='contained'
+                                color='secondary'
+                                size='large'
+                                type='submit'
+                                onClick={this.signUp.bind(this)}>Sign Up</Button>
+                    </Grid>
+                </form>
                 <Dialog
                     open={this.state.openDialogue}
                     onClose={this.handleClose.bind(this)}
