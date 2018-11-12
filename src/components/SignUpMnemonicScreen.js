@@ -133,6 +133,7 @@ class SignUpMnemonicScreen extends Component {
                             <InputLabel htmlFor="component-filled-mnemonic">Mnemonic</InputLabel>
                             <FilledInput id="component-filled-mnemonic"
                                          value={this.state.mnemonic.value}
+                                         autoComplete="off"
                                          onChange={event => this.setValue(event, FieldNames.mnemonic)} />
                             {this.state.mnemonic.error
                                 ? <FormHelperText>{this.state.mnemonic.error}</FormHelperText>

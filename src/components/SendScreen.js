@@ -25,13 +25,12 @@ import Fade from '../../node_modules/@material-ui/core/Fade/Fade';
 import { PageActions } from '../actions/index';
 import { networks } from '../constants/networks';
 import AuthHelper from '../helpers/AuthHelper';
+import HDWalletProvider from '../libs/truffle-hdwallet-provider';
 import InputFieldInState from '../models/InputFieldInState';
 import { ScreenNames } from '../reducers/screen';
 import GoMainHeader from './GoMainHeader';
 import SimpleAccountSelector from './SimpleAccountSelector';
 import { mainColor, mainLightTextColor } from './StyledComponents';
-
-const HDWalletProvider = require('truffle-hdwallet-provider');
 
 const styles = theme => ({
     container: {
@@ -115,7 +114,7 @@ class SendScreen extends Component {
         }
         this.provider = new HDWalletProvider('', networkUri);
         this.testWeb3 = new Web3(this.provider);
-        console.log('w3', this.testWeb3, networkUri);
+
         this.gasPrice = 1000000000;
         this.updateGasPrice()
 
@@ -130,7 +129,6 @@ class SendScreen extends Component {
         let commission = this.testWeb3.utils.fromWei(commissionBN, 'ether');
         this.setState({commission: commission});
         this.provider.engine.stop();
-        console.log('currentGasPrice', this.gasPrice);
     }
 
     async sendTo(event) {
@@ -179,6 +177,7 @@ class SendScreen extends Component {
             };
 
             // authorize by mnemonic
+            let onEnd = () => {};
             if (typeof data === 'string') {
                 let networkUri = networkName;
                 if (networks[networkName]) {
@@ -186,6 +185,7 @@ class SendScreen extends Component {
                 }
 
                 const provider = new HDWalletProvider(data, networkUri, 0, 10);
+                onEnd = () => {provider.engine.stop()};
                 web3 = new Web3(provider);
 
                 web3.eth.defaultAccount = accountAddress;
@@ -225,6 +225,7 @@ class SendScreen extends Component {
                     dialogueMessage: "Error description:\n" + error.message
                 });
             }
+            onEnd();
             this.setState({sendInProgress: false});
             this.props.pageActions.getBalance();
 
