@@ -152,6 +152,24 @@ class ContractScreen extends Component {
         this.abiData = {};
 
         this.payload = null;
+
+        const {networkName} = this.props.wallet;
+
+        let networkUri = networkName;
+        if (networks[networkName]) {
+            networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
+        }
+
+        this.gasPrice = 1000000000;
+        this.provider = new HDWalletProvider('', networkUri);
+        this.testWeb3 = new Web3(this.provider);
+
+        this.updateGasPrice()
+    }
+
+    async updateGasPrice() {
+        this.gasPrice = await this.testWeb3.eth.getGasPrice();
+        this.provider.engine.stop();
     }
 
     updateInputs(methodName) {
@@ -356,6 +374,7 @@ class ContractScreen extends Component {
             this.setState({sendInProgress: true});
             try {
                 const contract = new web3.eth.Contract(this.abiData, toAddress, optionsObject);
+
                 const methodInfo = this.abiMethods[this.state.methodName];
                 let transactionInfo = null;
                 if (methodInfo['stateMutability'] === 'view') {
@@ -363,8 +382,15 @@ class ContractScreen extends Component {
                     transactionInfo = await contract.methods[this.state.methodName]
                         .apply(contract, args).call(optionsObject);
                 } else {
-                    transactionInfo = await contract.methods[this.state.methodName]
-                        .apply(contract, args).send(optionsObject);
+                    const method = contract.methods[this.state.methodName]
+                        .apply(contract, args);
+                    const gasLimit = await method.estimateGas(optionsObject);
+                    console.log('gasLimit', gasLimit);
+                    optionsObject.gas = gasLimit;
+                    optionsObject.gasPrice = this.gasPrice;
+                    //optionsObject.value = 10000;
+                    console.log('optionsObject', optionsObject);
+                    transactionInfo = await method.send(optionsObject);
                 }
 
                 console.log('TransactionInfo:', transactionInfo);
