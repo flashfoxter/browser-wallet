@@ -20,7 +20,7 @@
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-1": "^6.24.1",
     "babelify": "^7.3.0",
-    "browserify": "^13.0.0",
+    "browserify": "^16.2.3",
     "chrome-https": "^2.0.1",
     "copy-text-to-clipboard": "^1.0.4",
     "ethereumjs-wallet": "^0.6.2",
