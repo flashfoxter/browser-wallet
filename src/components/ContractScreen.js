@@ -18,6 +18,9 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Web3 from 'web3';
+import Backdrop from '../../node_modules/@material-ui/core/Backdrop/Backdrop';
+import CircularProgress from '../../node_modules/@material-ui/core/CircularProgress/CircularProgress';
+import Fade from '../../node_modules/@material-ui/core/Fade/Fade';
 import HDWalletProvider from '../libs/truffle-hdwallet-provider';
 import Done from '../../node_modules/@material-ui/icons/Done';
 import Visibility from '../../node_modules/@material-ui/icons/Visibility';
@@ -84,6 +87,14 @@ const styles = theme => ({
         lineHeight: '1em',
         cursor: 'pointer'
     },
+    backdrop: {
+        zIndex: 0
+    },
+    centerAnimation: {
+        position: 'fixed',
+        top: 'calc(50% - 44px)',
+        left: 'calc(50% - 44px)',
+    },
     menuItem: {
         position: 'relative',
         height: '34px',
@@ -122,6 +133,8 @@ const FieldNames = {
     address: 'address',
     password: 'password'
 };
+
+const PRETTY_JSON = 2;
 
 class ContractScreen extends Component {
     constructor (props) {
@@ -184,6 +197,18 @@ class ContractScreen extends Component {
                     label: (inputDef.name ? inputDef.name : 'input') + ' ' + inputDef.type + ' (json)'
                 };
             });
+
+            if (abiMethods[methodName]['type'] === 'payable') {
+                this.inputFields.push(
+                    {
+                        name: 'payable_amount',
+                        key: 'payable_amount' ,
+                        value: '',
+                        error: '',
+                        label: 'Amount'
+                    }
+                );
+            }
         }
     }
 
@@ -329,14 +354,34 @@ class ContractScreen extends Component {
             isValid = false;
         }
 
-        const args = this.inputFields.map(inputDef => {
-            let data = null;
-            try {
-                data = JSON.parse(inputDef.value);
-            } catch(e) {
-                isValid = false;
+        const args = [];
+        let amount = 0;
+        let amount_str = '';
+        this.inputFields.map(inputDef => {
+            if (inputDef['name'] !== 'payable_amount') {
+                let data = null;
+                try {
+                    data = JSON.parse(inputDef.value);
+                } catch(e) {
+                    isValid = false;
+                    inputDef.error = 'Invalid format: ' + e.message;
+                    console.log('parse Error', inputDef);
+                }
+                args.push(data);
+            } else {
+                amount = parseFloat(inputDef['value']);
+                amount_str = inputDef['value'];
+                if (Number.isNaN(amount)) {
+                    inputDef['error'] = 'incorrect amount';
+                    isValid = false;
+                } else if (amount <= 0) {
+                    inputDef['error'] = 'Amount mast be greater then 0';
+                    isValid = false;
+                } else if (amount > balance) {
+                    inputDef['error'] = 'Amount mast be less then you have';
+                    isValid = false;
+                }
             }
-            return data;
         });
 
         if (isValid) {
@@ -388,27 +433,26 @@ class ContractScreen extends Component {
                     console.log('gasLimit', gasLimit);
                     optionsObject.gas = gasLimit;
                     optionsObject.gasPrice = this.gasPrice;
-                    //optionsObject.value = 10000;
+                    if (amount) {
+                        optionsObject.value = Web3.utils.toWei(amount_str, 'ether');
+                    }
+
                     console.log('optionsObject', optionsObject);
                     transactionInfo = await method.send(optionsObject);
                 }
 
                 console.log('TransactionInfo:', transactionInfo);
-
+                this.setState({lastResult: JSON.stringify(transactionInfo, null, PRETTY_JSON)});
 
             } catch (error) {
                 console.log('TransactionError:', error);
-                //show dialog with error
-                /*this.setState({
-                    openDialogue: true,
-                    dialogueTitle: 'Transaction error',
-                    dialogueMessage: "Error description:\n" + error.message
-                });*/
             }
             onEnd();
             this.setState({sendInProgress: false});
             //this.props.pageActions.getBalance();
 
+        } else {
+            this.forceUpdate();
         }
 
     }
@@ -416,7 +460,7 @@ class ContractScreen extends Component {
     render() {
 
         const {classes} = this.props;
-        const {abiMethods, methodName} = this.state;
+        const {abiMethods, methodName, lastResult} = this.state;
         console.log('abiMethods', abiMethods);
         const SelectMethodItems = Object.keys(abiMethods).map(method => {
             const methodDesc = abiMethods[method];
@@ -460,7 +504,11 @@ class ContractScreen extends Component {
                         <FilledInput id="component-filled"
                                      multiline
                                      value={inputDesc.value}
-                                     onChange={event => {inputDesc.value = event.target.value;this.forceUpdate()}} />
+                                     onChange={event => {
+                                         inputDesc.value = event.target.value;
+                                         inputDesc.error = '';
+                                         this.forceUpdate();
+                                     }} />
                         {inputDesc.error
                             ? <FormHelperText>{inputDesc.error}</FormHelperText>
                             : null
@@ -469,6 +517,7 @@ class ContractScreen extends Component {
                 </Grid>
             });
         }
+
 
 
         return (
@@ -564,6 +613,23 @@ class ContractScreen extends Component {
                         </FormControl>
                     </Grid>
                     {inputFields}
+                    {
+                        lastResult
+                            ? <Grid
+                                container
+                                style={{ paddingTop: '32px' }}
+                                justify='center'>
+                                <FormControl
+                                    variant="filled">
+                                    <InputLabel htmlFor="component-filled">Last call result:</InputLabel>
+                                    <FilledInput id="component-filled"
+                                                 multiline
+                                                 disabled={true}
+                                                 value={lastResult}/>
+                                </FormControl>
+                            </Grid>
+                            : null
+                    }
                     <Grid
                         container
                         style={{ paddingTop: '32px' }}
@@ -596,7 +662,7 @@ class ContractScreen extends Component {
                     </Grid>
                     <Grid
                         container
-                        style={{ paddingTop: '32px' }}
+                        style={{ padding: '32px 0' }}
                         justify='center'>
                         <Button variant='contained'
                                 color='secondary'
@@ -604,6 +670,22 @@ class ContractScreen extends Component {
                                 size='large'>Call method</Button>
                 </Grid>
                 </form>
+                {this.state.sendInProgress
+                    ? <Backdrop open={this.state.sendInProgress} className={classes.backdrop}/>
+                    : null}
+
+                {
+                    this.state.sendInProgress
+                        ? <Fade
+                            in={this.state.sendInProgress}
+                            style={{
+                                transitionDelay: this.state.sendInProgress ? '800ms' : '0ms',
+                            }}
+                            unmountOnExit>
+                            <CircularProgress className={classes.centerAnimation}/>
+                        </Fade>
+                        : null
+                }
                 <Dialog
                     open={this.state.openDialogue}
                     onClose={this.handleClose.bind(this)}

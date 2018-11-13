@@ -112,8 +112,9 @@ export default {
                     if (!name) {
                         name = 'default'
                     }
-
-                    methodsObj[name] = methodDesc;
+                    if (methodDesc['type'] && methodDesc['type'] !== 'event') {
+                        methodsObj[name] = methodDesc;
+                    }
                 }
 
             });
