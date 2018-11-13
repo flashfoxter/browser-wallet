@@ -57,9 +57,14 @@ class AboutScreen extends Component {
                     size='small'
                     justify='center'>
                     <Typography>
-                        Text about application. Describe how the functions and about the team.
-                        Text about application. Describe how the functions and about the team.
-                        Text about application. Describe how the functions and about the team.
+                        <ul>
+                            <li>Mnemonic phrase (<a href='https://iancoleman.io/bip39/' target='_blank' className={classes.link}>BIP39</a>) and private key import support</li>
+                            <li>Connection to known Ethereum netwoks</li>
+                            <li>Connection to custom node via RPC</li>
+                            <li>Get balance</li>
+                            <li>Send transactions</li>
+                            <li>View transactions history (via <a href='https://etherscan.io/' target='_blank' className={classes.link}>Etherscan</a>)</li>
+                        </ul>
                     </Typography>
                 </Grid>
                 <Grid
@@ -69,8 +74,7 @@ class AboutScreen extends Component {
                     size='small'
                     justify='flex-start'>
                     <Typography>
-                        More about our projects:<br />
-                        <a href='http://www.gotiger.com' target='_blank' className={classes.link}>www.gotiger.com</a>
+                        More about our projects: <a href='http://www.gotiger.com' target='_blank' className={classes.link}>www.gotiger.com</a>
                     </Typography>
                 </Grid>
             </Grid>

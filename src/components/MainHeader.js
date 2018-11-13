@@ -131,7 +131,7 @@ const IconDiscColors = [
 const NetworkType = {
     basic: 'basic',
     custom: 'custom'
-}
+};
 
 const DEFAULT_NETWORK_ITEMS = [
     {
