@@ -134,37 +134,15 @@ const FieldNames = {
     password: 'password'
 };
 
+const saveFields = ['state', 'inputFields', 'account', 'abiMethods', 'abiData', 'payload', 'gasPrice'];
+
 const PRETTY_JSON = 2;
 
 class ContractScreen extends Component {
     constructor (props) {
         super(props);
 
-        this.state = {
-            address: {value: '', error: ''},
-            password: {value: '', error: ''},
-            openDialogue: false,
-            openSelectDialog: false,
-            showPassword: false,
-            abiFileName: '',
-            abiFileError: '',
-            abiMethods: [],
-            methodName: '',
-            lastResult: ''
-        };
-
-        this.fields = {
-            address: new InputFieldInState({}, FieldNames.address, this),
-            password: new InputFieldInState({}, FieldNames.password, this)
-        };
-
-        this.inputFields = [];
-
-        this.account = null;
-        this.abiMethods = [];
-        this.abiData = {};
-
-        this.payload = null;
+        this.onLoad();
 
         const {networkName} = this.props.wallet;
 
@@ -173,16 +151,71 @@ class ContractScreen extends Component {
             networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
         }
 
-        this.gasPrice = 1000000000;
         this.provider = new HDWalletProvider('', networkUri);
         this.testWeb3 = new Web3(this.provider);
 
         this.updateGasPrice()
     }
 
+    onLoad() {
+        if (this.props.screen.currentScreenData) {
+            const savedData = this.props.screen.currentScreenData.data;
+            saveFields.forEach(fieldName => {
+                this[fieldName] = savedData[fieldName];
+            });
+
+            this.fields = {
+                address: new InputFieldInState({value: savedData.fields.address}, FieldNames.address, this),
+                password: new InputFieldInState({value: savedData.fields.password}, FieldNames.password, this)
+            };
+
+            this.state.address.value = savedData.fields.address;
+            this.state.password.value = savedData.fields.password;
+
+        } else {
+            this.state = {
+                address: {value: '', error: ''},
+                password: {value: '', error: ''},
+                openDialogue: false,
+                openSelectDialog: false,
+                showPassword: false,
+                abiFileName: '',
+                abiFileError: '',
+                abiMethods: [],
+                methodName: '',
+                lastResult: ''
+            };
+
+            this.fields = {
+                address: new InputFieldInState({}, FieldNames.address, this),
+                password: new InputFieldInState({}, FieldNames.password, this)
+            };
+
+            this.inputFields = [];
+
+            this.account = null;
+            this.abiMethods = [];
+            this.abiData = {};
+
+            this.payload = null;
+            this.gasPrice = 1000000000;
+        }
+    }
+
+    saveState() {
+        const savedData = {};
+        saveFields.forEach(fieldName => {
+            savedData[fieldName] = this[fieldName];
+        });
+        savedData.fields = {address: this.fields.address.value, password: this.fields.password.value};
+
+        this.props.pageActions.saveCurrentScreenState(savedData);
+    }
+
     async updateGasPrice() {
         this.gasPrice = await this.testWeb3.eth.getGasPrice();
         this.provider.engine.stop();
+        this.saveState();
     }
 
     updateInputs(methodName) {
@@ -223,19 +256,7 @@ class ContractScreen extends Component {
 
                     let abiFileError = '';
                     try {
-                        console.log('contract content', contractAbi);
-                        this.abiMethods = NetHelper.readAbi(contractAbi);
-                        if (!this.abiMethods) {
-                            throw new Error('invalid abi file');
-                        }
-                        const web3 = new Web3();
-                        this.contractData = new web3.eth.Contract(JSON.parse(contractAbi));
-                        console.log('contract content', this.contractData, this.abiMethods);
-                        this.abiData = JSON.parse(contractAbi);
-
-                        const methodName = Object.keys(this.abiMethods)[0];
-                        this.setState({abiMethods: this.abiMethods, methodName});
-                        this.updateInputs(methodName);
+                        this.readABI(contractAbi);
                     } catch(e) {
                         console.log('error while readPK', e);
                         this.contractData = null;
@@ -243,6 +264,7 @@ class ContractScreen extends Component {
                     }
                     console.log('afterSelect:', abiFileError, theFile.name);
                     this.setState({abiFileName: theFile.name, abiFileError});
+                    this.saveState();
 
                 };
             })(target.files[0]);
@@ -257,63 +279,65 @@ class ContractScreen extends Component {
         this.refs.abiFile.click();
     }
 
-    fileHandler(event) {
-        const target = event.target;
-
-        if (target.files && target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (theFile => {
-                return e => {
-                    const privateKey = e.target.result;
-
-                    let fileError = '';
-                    try {
-                        const web3 = new Web3();
-                        this.account = web3.eth.accounts.privateKeyToAccount(privateKey);
-                        console.log(this.account);
-                    } catch(e) {
-                        console.log('error while readPK', e);
-                        this.account = null;
-                        fileError = 'Selected file does not contain the correct privateKey';
-                    }
-                    console.log('afterSelect:', fileError, theFile.name);
-                    this.setState({fileName: theFile.name, fileError});
-
-                };
-            })(target.files[0]);
-
-            // Read in the private key file.
-            reader.readAsText(target.files[0]);
-
+    readABI(contractAbi) {
+        console.log('contract content', contractAbi);
+        this.abiMethods = NetHelper.readAbi(contractAbi);
+        if (!this.abiMethods) {
+            throw new Error('invalid abi file');
         }
+        const web3 = new Web3();
+        this.contractData = new web3.eth.Contract(JSON.parse(contractAbi));
+        console.log('contract content', this.contractData, this.abiMethods);
+        this.abiData = JSON.parse(contractAbi);
+
+        const methodName = Object.keys(this.abiMethods)[0];
+        this.setState({abiMethods: this.abiMethods, methodName});
+        this.updateInputs(methodName);
+        this.saveState();
     }
 
-    clickToSelectFile(event) {
-        console.log('event', event, this.refs.pk);
-        this.refs.pk.click();
+    async onChangeAddress() {
+        const address = this.fields.address.value;
+        const {networkName} = this.props.wallet;
+        console.log('addr is', address, networks[networkName]);
+        if (networks[networkName]) {
+            const abiContent = await NetHelper.getAbi(address, networkName);
+            if (abiContent) {
+                try {
+                    this.readABI(abiContent);
+                    this.saveState();
+                    this.forceUpdate();
+                } catch(e) {
+                    console.log('abi from etherscan error:', e);
+                }
+            }
+        }
     }
 
     setValue(event, fieldName) {
         const value = event.target.value;
         this.fields[fieldName].value = value;
+        this.saveState();
     }
 
     handleClose() {
-        this.setState({openDialogue: false});
-        this.props.pageActions.signUp(this.payload);
+
     }
 
     handleCloseMethodSelect() {
         this.setState({openSelectDialog: false});
+        this.saveState();
     }
 
     handleOpenMethodSelect() {
         console.log('handleOpenMethodSelect');
         this.setState({openSelectDialog: true});
+        this.saveState();
     }
 
     handleClickShowPassword() {
         this.setState(state => ({ showPassword: !state.showPassword }));
+        this.saveState();
     }
 
     renderMethodValue(value) {
@@ -331,6 +355,7 @@ class ContractScreen extends Component {
     handleChangeMethod(event) {
         this.setState({openSelectDialog: false, methodName: event.target.value});
         this.updateInputs(event.target.value);
+        this.saveState();
     }
 
     async callMethod(event) {
@@ -348,10 +373,14 @@ class ContractScreen extends Component {
             isValid = false;
         }
 
-        const data = AuthHelper.getUserDataFormStorage(this.props.accounts.currentLogin, this.state.password.value);
-        if (!data) {
-            this.fields.password.error = 'Password is invalid';
-            isValid = false;
+        const methodInfo = this.abiMethods[this.state.methodName];
+        let data = '';
+        if (methodInfo['stateMutability'] !== 'view') {
+            data = AuthHelper.getUserDataFormStorage(this.props.accounts.currentLogin, this.state.password.value);
+            if (!data) {
+                this.fields.password.error = 'Password is invalid';
+                isValid = false;
+            }
         }
 
         const args = [];
@@ -420,7 +449,6 @@ class ContractScreen extends Component {
             try {
                 const contract = new web3.eth.Contract(this.abiData, toAddress, optionsObject);
 
-                const methodInfo = this.abiMethods[this.state.methodName];
                 let transactionInfo = null;
                 if (methodInfo['stateMutability'] === 'view') {
 
@@ -449,9 +477,11 @@ class ContractScreen extends Component {
             }
             onEnd();
             this.setState({sendInProgress: false});
+            this.saveState();
             //this.props.pageActions.getBalance();
 
         } else {
+            this.saveState();
             this.forceUpdate();
         }
 
@@ -489,8 +519,9 @@ class ContractScreen extends Component {
 
         let inputFields = null;
 
+        let methodDesc = null;
         if (methodName) {
-            const methodDesc = abiMethods[methodName];
+            methodDesc = abiMethods[methodName];
             inputFields = this.inputFields.map((inputDesc, ind) => {
                 return <Grid
                     key={inputDesc.key}
@@ -507,6 +538,7 @@ class ContractScreen extends Component {
                                      onChange={event => {
                                          inputDesc.value = event.target.value;
                                          inputDesc.error = '';
+                                         this.saveState();
                                          this.forceUpdate();
                                      }} />
                         {inputDesc.error
@@ -605,7 +637,10 @@ class ContractScreen extends Component {
                             <InputLabel htmlFor="component-filled">Contract address</InputLabel>
                             <FilledInput id="component-filled"
                                          value={this.state.address.value}
-                                         onChange={event => this.setValue(event, FieldNames.address)} />
+                                         onChange={event => {
+                                             this.setValue(event, FieldNames.address);
+                                             this.onChangeAddress();
+                                         }} />
                             {this.state.address.error
                                 ? <FormHelperText id="component-error-text">{this.state.address.error}</FormHelperText>
                                 : null
@@ -630,42 +665,47 @@ class ContractScreen extends Component {
                             </Grid>
                             : null
                     }
-                    <Grid
-                        container
-                        style={{ paddingTop: '32px' }}
-                        justify='center'>
-                        <FormControl
-                            variant="filled"
-                            error={!!this.state.password.error}>
-                            <InputLabel htmlFor="component-filled-password">Password</InputLabel>
-                            <FilledInput id="component-filled-password"
-                                         value={this.state.password.value}
-                                         type={this.state.showPassword ? 'text' : 'password'}
-                                         onChange={event => this.setValue(event, FieldNames.password)}
-                                         endAdornment={
-                                             (
-                                                 <InputAdornment position="end">
-                                                     <IconButton
-                                                         aria-label="Toggle password visibility"
-                                                         onClick={this.handleClickShowPassword.bind(this)}>
+                    {
+                        methodDesc && methodDesc['stateMutability'] !== 'view'
+                            ? <Grid
+                                container
+                                style={{ paddingTop: '32px' }}
+                                justify='center'>
+                                <FormControl
+                                    variant="filled"
+                                    error={!!this.state.password.error}>
+                                    <InputLabel htmlFor="component-filled-password">Password</InputLabel>
+                                    <FilledInput id="component-filled-password"
+                                                 value={this.state.password.value}
+                                                 type={this.state.showPassword ? 'text' : 'password'}
+                                                 onChange={event => this.setValue(event, FieldNames.password)}
+                                                 endAdornment={
+                                                     (
+                                                         <InputAdornment position="end">
+                                                             <IconButton
+                                                                 aria-label="Toggle password visibility"
+                                                                 onClick={this.handleClickShowPassword.bind(this)}>
 
-                                                         {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
-                                                     </IconButton>
-                                                 </InputAdornment>
-                                             )
-                                         }/>
-                            {this.state.password.error
-                                ? <FormHelperText id="component-error-text">{this.state.password.error}</FormHelperText>
-                                : null
-                            }
-                        </FormControl>
-                    </Grid>
+                                                                 {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
+                                                             </IconButton>
+                                                         </InputAdornment>
+                                                     )
+                                                 }/>
+                                    {this.state.password.error
+                                        ? <FormHelperText id="component-error-text">{this.state.password.error}</FormHelperText>
+                                        : null
+                                    }
+                                </FormControl>
+                              </Grid>
+                            : null
+                    }
                     <Grid
                         container
                         style={{ padding: '32px 0' }}
                         justify='center'>
                         <Button variant='contained'
                                 color='secondary'
+                                disabled={this.abiMethods.length === 0}
                                 onClick={this.callMethod.bind(this)}
                                 size='large'>Call method</Button>
                 </Grid>
@@ -707,7 +747,8 @@ class ContractScreen extends Component {
  */
 ContractScreen.propTypes = {
     accounts: PropTypes.object.isRequired,
-    wallet: PropTypes.object.isRequired
+    wallet: PropTypes.object.isRequired,
+    screen: PropTypes.object.isRequired
 };
 
 /**
@@ -719,6 +760,7 @@ function mapStateToProps(state) {
     return {
         accounts: state.accounts,
         wallet: state.wallet,
+        screen: state.screen,
     }
 }
 

@@ -58,10 +58,19 @@ export default {
         const domain = ETHERSCAN_NETWORKS_URI_MAP[network];
 
         const requestURI = domain + '/api?module=account&action=txlist&address='
-                + address + '&startblock=0&endblock=99999999&sort=asc&apikey=' + ETHERSCAN_TOKEN;
+            + address + '&startblock=0&endblock=99999999&sort=asc&apikey=' + ETHERSCAN_TOKEN;
         const response = JSON.parse(await this.httpRequest(requestURI));
         console.log(response);
         return response;
+    },
+    async getAbi(address, network) {
+        const domain = ETHERSCAN_NETWORKS_URI_MAP[network];
+
+        const requestURI = domain + '/api?module=contract&action=getabi&address='
+            + address + '&apikey=' + ETHERSCAN_TOKEN;
+        const response = JSON.parse(await this.httpRequest(requestURI));
+
+        return response && response.status === '1' ? response.result : '';
     },
     readAbi(jsonString) {
         let unnamed = 0;

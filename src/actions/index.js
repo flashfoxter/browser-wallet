@@ -18,7 +18,8 @@ export const ActionsList = {
     'LOG_OUT': 'LOG_OUT',
     'SIGN_IN': 'SIGN_IN',
     'CHANGE_SCREEN': 'CHANGE_SCREEN',
-    'GO_BACK_SCREEN': 'GO_BACK_SCREEN'
+    'GO_BACK_SCREEN': 'GO_BACK_SCREEN',
+    'SAVE_CURRENT_SCREEN_STATE': 'SAVE_CURRENT_SCREEN_STATE'
 };
 
 export const PageActions = {
@@ -35,6 +36,10 @@ export const PageActions = {
     }),
     updateNetworkItems: (payload) => ({
         type: ActionsList.UPDATE_NETWORK_ITEMS,
+        payload
+    }),
+    saveCurrentScreenState: (payload) => ({
+        type: ActionsList.SAVE_CURRENT_SCREEN_STATE,
         payload
     }),
     changeNetwork: (payload) => ({
