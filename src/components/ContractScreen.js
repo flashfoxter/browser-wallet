@@ -146,10 +146,7 @@ class ContractScreen extends Component {
 
         const {networkName} = this.props.wallet;
 
-        let networkUri = networkName;
-        if (networks[networkName]) {
-            networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
-        }
+        let networkUri = NetHelper.getNetworkUri(networkName);
 
         this.provider = new HDWalletProvider('', networkUri);
         this.testWeb3 = new Web3(this.provider);
@@ -423,24 +420,14 @@ class ContractScreen extends Component {
 
             // authorize by mnemonic
             let onEnd = () => {};
+            let networkUri = NetHelper.getNetworkUri(networkName);
             if (typeof data === 'string') {
-                let networkUri = networkName;
-                if (networks[networkName]) {
-                    networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
-                }
-
                 const provider = new HDWalletProvider(data, networkUri, 0, 10);
                 onEnd = () => {provider.engine.stop()};
                 web3 = new Web3(provider);
 
                 web3.eth.defaultAccount = accountAddress;
             } else {
-                let networkUri = networkName;
-
-                if (networks[networkName]) {
-                    networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
-                }
-
                 web3 = new Web3(new Web3.providers.HttpProvider(networkUri));
                 web3.eth.accounts.wallet.add(data);
             }

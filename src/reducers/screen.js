@@ -1,4 +1,5 @@
 import { ActionsList } from '../actions';
+import { WorkMode } from '../constants/mode';
 import { createStoredReducer } from '../models/StoredReducer';
 
 export const ScreenNames = {
@@ -19,6 +20,8 @@ const initialState = {
 };
 
 const MAX_HISTORY_LENGTH = 3;
+
+const storageKey = window.work_mode === WorkMode.proxy ? 'screenProxy' : 'screen';
 
 const screen = createStoredReducer((state, action) => {
     switch (action.type) {
@@ -54,6 +57,6 @@ const screen = createStoredReducer((state, action) => {
         default:
             return state
     }
-}, 'screen', initialState);
+}, storageKey, initialState);
 
 export default screen;

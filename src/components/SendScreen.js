@@ -25,6 +25,7 @@ import Fade from '../../node_modules/@material-ui/core/Fade/Fade';
 import { PageActions } from '../actions/index';
 import { networks } from '../constants/networks';
 import AuthHelper from '../helpers/AuthHelper';
+import NetHelper from '../helpers/NetHelper';
 import InputFieldInState from '../models/InputFieldInState';
 import { ScreenNames } from '../reducers/screen';
 import GoMainHeader from './GoMainHeader';
@@ -178,24 +179,14 @@ class SendScreen extends Component {
                 value: Web3.utils.toWei(this.state.amount.value, 'ether')
             };
 
+            let networkUri = NetHelper.getNetworkUri(networkName);
             // authorize by mnemonic
             if (typeof data === 'string') {
-                let networkUri = networkName;
-                if (networks[networkName]) {
-                    networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
-                }
-
                 const provider = new HDWalletProvider(data, networkUri, 0, 10);
                 web3 = new Web3(provider);
 
                 web3.eth.defaultAccount = accountAddress;
             } else {
-                let networkUri = networkName;
-
-                if (networks[networkName]) {
-                    networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
-                }
-
                 web3 = new Web3(new Web3.providers.HttpProvider(networkUri));
                 web3.eth.accounts.wallet.add(data);
             }

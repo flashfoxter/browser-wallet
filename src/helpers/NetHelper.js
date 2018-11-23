@@ -131,5 +131,14 @@ export default {
         } catch(e) {
             return false;
         }
+    },
+    getNetworkUri(networkName) {
+        let networkUri = networkName;
+
+        if (networks[networkName]) {
+            networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
+        }
+
+        return networkUri;
     }
 };

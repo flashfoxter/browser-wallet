@@ -5,6 +5,8 @@ import { createStore } from 'redux';
 import App from './components/App';
 import reducer from './reducers';
 
+
+
 export const store = createStore(reducer);
 
 render(
