@@ -10,11 +10,12 @@ export const ScreenNames = {
     'MAIN_SCREEN': 'MAIN_SCREEN',
     'ABOUT_SCREEN': 'ABOUT_SCREEN',
     'SEND_SCREEN': 'SEND_SCREEN',
-    'CONTRACT_SCREEN': 'CONTRACT_SCREEN'
+    'CONTRACT_SCREEN': 'CONTRACT_SCREEN',
+    'REQUEST_SCREEN': 'REQUEST_SCREEN'
 };
 
 const initialState = {
-    currentScreen: ScreenNames.SIGN_IN_SCREEN,
+    currentScreen: window.work_mode === WorkMode.proxy ? ScreenNames.REQUEST_SCREEN : ScreenNames.SIGN_IN_SCREEN,
     screenHistory: [],
     currentScreenData: {}
 };
@@ -51,7 +52,11 @@ const screen = createStoredReducer((state, action) => {
             }
         case ActionsList.SIGN_UP:
         case ActionsList.SIGN_IN:
-            return Object.assign({}, state, {screenHistory: [], currentScreen: ScreenNames.MAIN_SCREEN});
+            const screenName = window.work_mode === WorkMode.proxy
+                ? ScreenNames.REQUEST_SCREEN
+                : ScreenNames.MAIN_SCREEN;
+
+            return Object.assign({}, state, {screenHistory: [], currentScreen: screenName});
         case ActionsList.LOG_OUT:
             return Object.assign({}, state, {screenHistory: [], currentScreen: ScreenNames.SIGN_IN_SCREEN});
         default:

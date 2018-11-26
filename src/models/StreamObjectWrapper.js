@@ -95,8 +95,13 @@ export class StreamObjectWrapper {
     }
 
     emit(eventName, data) {
-        const sendObject = {eventName, data};
-        this.connectionStream.write(JSON.stringify(sendObject));
+        try {
+            const sendObject = {eventName, data};
+            this.connectionStream.write(JSON.stringify(sendObject));
+        } catch(e) {
+            //failed on write, need close connection
+            this.close();
+        }
     }
 
     close() {

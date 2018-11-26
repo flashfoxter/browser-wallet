@@ -14,7 +14,7 @@
     "mkdirs": "mkdir dist && cd dist && mkdir icons",
     "clean": "rimraf dist",
     "copyfiles": "cp -r icons/* dist/icons && cp app.js dist && cp popup.html dist && cp manifest.json dist && cp wallet-logo.png dist",
-    "copyfiles2": "cp background.js dist && cp notification.html dist && cp notifications.js dist && cp contentpage.js dist && cp inject.js dist"
+    "copyfiles2": "cp background.js dist && cp notification.html dist && cp notifications.js dist && cp contentpage.js dist && cp inject.js dist && cp proxy-mode.js dist"
   },
   "dependencies": {
     "@material-ui/core": "^3.2.0",

@@ -16,8 +16,8 @@ class MyExtension {
 }
 
 
-const height = 620;
-const width = 360;
+const height = 640;
+const width = 390;
 
 
 class NotificationManager {
@@ -168,10 +168,20 @@ class BackgroundController {
         }
     }
 
-    hookRetranslatedCall(name, data, cb, additionalData) {
-        console.log('hook', name, data, cb, additionalData);
+    hookRetranslatedCall(name, data, callback, additionalData) {
+        console.log('hook', name, data, callback, additionalData);
+        const request = {
+            callback,
+            data,
+            method: name,
+            additionalData
+        };
+        this.requestIdMap[additionalData.requestId] = request;
         if (this.notificationStream) {
-            this.notificationStream.emit('addMessage', {method: name, data});
+            this.notificationStream.emit('addMessage', request);
+        } else {
+            this.notificationManager.showPopup();
+            this.messagesForNotification.push(request);
         }
     }
 
@@ -233,8 +243,8 @@ class BackgroundController {
 
             this.notificationStream = new StreamObjectWrapper(portStream, 'backendToNotification');
             this.notificationStream.on('disconnect', () => {this.notificationStream = null});
-            this.messagesForNotification.forEach(message => {
-                this.notificationStream.emit(message.event, message.data);
+            this.messagesForNotification.forEach(request => {
+                this.notificationStream.emit('addMessage', request);
             });
             this.messagesForNotification = [];
         } else if(processName === 'config') {

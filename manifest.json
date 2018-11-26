@@ -39,5 +39,5 @@
     "author": "https://gotiger.com",
 
     "permissions": ["storage", "unlimitedStorage", "clipboardWrite", "activeTab", "webRequest", "notifications", "*://*/*"],
-    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+    "content_security_policy": "script-src 'self' 'unsafe-eval' 'unsafe-inline'; object-src 'self'"
 }

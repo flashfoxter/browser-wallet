@@ -27,6 +27,7 @@ import { networks } from '../constants/networks';
 import AuthHelper from '../helpers/AuthHelper';
 import NetHelper from '../helpers/NetHelper';
 import InputFieldInState from '../models/InputFieldInState';
+import requests from '../reducers/requests';
 import { ScreenNames } from '../reducers/screen';
 import GoMainHeader from './GoMainHeader';
 import SimpleAccountSelector from './SimpleAccountSelector';
@@ -85,7 +86,7 @@ const FieldNames = {
 
 const DEFAULT_GASLIMIT = 21000;
 
-class SendScreen extends Component {
+class RequestScreen extends Component {
     constructor (props) {
         super(props);
 
@@ -124,26 +125,29 @@ class SendScreen extends Component {
 
     async updateGasPrice() {
         this.gasPrice = await this.testWeb3.eth.getGasPrice();
-        const BN = this.testWeb3.utils.BN;
-        let gasPrice = new BN(this.gasPrice);
-        const commissionBN = gasPrice.mul(new BN(DEFAULT_GASLIMIT));
+        let gasPrice = this.testWeb3.toBigNumber(this.gasPrice);
+        const commissionBN = gasPrice.mul(this.testWeb3.toBigNumber(DEFAULT_GASLIMIT));
 
-        let commission = this.testWeb3.utils.fromWei(commissionBN, 'ether');
+        let commission = this.testWeb3.fromWei(commissionBN, 'ether');
         this.setState({commission: commission});
         this.provider.engine.stop();
         console.log('currentGasPrice', this.gasPrice);
     }
 
-    async sendTo(event) {
+    async accept(event) {
         event.preventDefault();
         const toAddress = this.state.address.value;
         const {currentAccounts, accountIndex} = this.props.accounts;
         const {balance, networkName} = this.props.wallet;
+        const {requests, requestIndex} = this.props.requests;
+        const requestInfo = requests[requestIndex];
+        console.log('requestInfo', requestInfo);
 
         const accountAddress = currentAccounts[accountIndex];
 
         let isValid = true;
 
+        /*
         const amount = parseFloat(this.state.amount.value);
         if (Number.isNaN(amount)) {
             this.fields.amount.error = 'incorrect amount';
@@ -159,7 +163,7 @@ class SendScreen extends Component {
         if (!Web3.utils.isAddress(this.state.address.value)) {
             this.fields.address.error = 'Invalid address';
             isValid = false;
-        }
+        }*/
 
         const data = AuthHelper.getUserDataFormStorage(this.props.accounts.currentLogin, this.state.password.value);
         if (!data) {
@@ -176,7 +180,7 @@ class SendScreen extends Component {
                 to: toAddress,
                 gasPrice: this.gasPrice,
                 gas: DEFAULT_GASLIMIT,
-                value: Web3.utils.toWei(this.state.amount.value, 'ether')
+                value: this.testWeb3.toWei(this.state.amount.value, 'ether')
             };
 
             let networkUri = NetHelper.getNetworkUri(networkName);
@@ -222,6 +226,18 @@ class SendScreen extends Component {
         }
     }
 
+    async decline(event) {
+        event.preventDefault();
+    }
+
+    async sall(event) {
+        event.preventDefault();
+
+        const {requests, requestIndex} = this.props.requests;
+        const requestInfo = requests[requestIndex];
+        console.log('requestsInfo', requests);
+    }
+
     setValue(event, fieldName) {
         const value = event.target.value;
         this.fields[fieldName].value = value;
@@ -245,7 +261,7 @@ class SendScreen extends Component {
 
     render() {
         const {classes} = this.props;
-
+        console.log('BN', this.props.wallet.balance);
         return (
             <Grid
                 container
@@ -253,7 +269,7 @@ class SendScreen extends Component {
                 <GoMainHeader screenName={ScreenNames.MAIN_SCREEN}>
                     Send
                 </GoMainHeader>
-                <form onSubmit={this.sendTo.bind(this)}>
+                <form onSubmit={this.accept.bind(this)}>
                     <Grid
                         container
                         style={{ paddingTop: '32px' }}
@@ -265,8 +281,16 @@ class SendScreen extends Component {
                         style={{ paddingTop: '0px' }}
                         justify='flex-start'>
                         <div>
+                            <span>Request info:</span>
+                        </div>
+                    </Grid>
+                    <Grid
+                        container
+                        style={{ paddingTop: '0px' }}
+                        justify='flex-start'>
+                        <div>
                             <span className={classes.labelText}>Balance: </span>
-                            <span className={classes.amountText}>{this.props.wallet.balance} ETH</span>
+                            <span className={classes.amountText}>{this.props.wallet.balance.toString()} ETH {'suka'}</span>
                         </div>
                     </Grid>
                     <Grid
@@ -296,6 +320,7 @@ class SendScreen extends Component {
                             <InputLabel htmlFor="component-filled">Amount</InputLabel>
                             <FilledInput id="component-filled"
                                          value={this.state.amount.value}
+                                         disabled={true}
                                          onChange={event => this.setValue(event, FieldNames.amount)} />
                             {this.state.amount.error
                                 ? <FormHelperText id="component-error-text">{this.state.amount.error}</FormHelperText>
@@ -350,7 +375,27 @@ class SendScreen extends Component {
                                 color='secondary'
                                 size='large'
                                 type='submit'
-                                onClick={this.sendTo.bind(this)}>Send</Button>
+                                onClick={this.accept.bind(this)}>Accept</Button>
+                    </Grid>
+                    <Grid
+                        container
+                        style={{ padding: '32px 0' }}
+                        justify='center'>
+                        <Button variant='contained'
+                                color='secondary'
+                                size='large'
+                                type='submit'
+                                onClick={this.decline.bind(this)}>Decline</Button>
+                    </Grid>
+                    <Grid
+                        container
+                        style={{ padding: '32px 0' }}
+                        justify='center'>
+                        <Button variant='contained'
+                                color='secondary'
+                                size='large'
+                                type='submit'
+                                onClick={this.sall.bind(this)}>ShowAll</Button>
                     </Grid>
                 </form>
                 {this.state.sendInProgress
@@ -398,9 +443,10 @@ class SendScreen extends Component {
  * Set data types for App
  * @type {Object}
  */
-SendScreen.propTypes = {
+RequestScreen.propTypes = {
     accounts: PropTypes.object.isRequired,
     wallet: PropTypes.object.isRequired,
+    requests: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired
 };
 
@@ -412,7 +458,8 @@ SendScreen.propTypes = {
 function mapStateToProps(state) {
     return {
         accounts: state.accounts,
-        wallet: state.wallet
+        wallet: state.wallet,
+        requests: state.requests
     }
 }
 
@@ -429,4 +476,4 @@ function mapDispatchToProps(dispatch) {
 export default withStyles(styles)(connect(
     mapStateToProps,
     mapDispatchToProps
-)(SendScreen))
+)(RequestScreen))

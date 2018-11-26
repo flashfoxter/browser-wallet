@@ -19,7 +19,8 @@ export const ActionsList = {
     'SIGN_IN': 'SIGN_IN',
     'CHANGE_SCREEN': 'CHANGE_SCREEN',
     'GO_BACK_SCREEN': 'GO_BACK_SCREEN',
-    'SAVE_CURRENT_SCREEN_STATE': 'SAVE_CURRENT_SCREEN_STATE'
+    'SAVE_CURRENT_SCREEN_STATE': 'SAVE_CURRENT_SCREEN_STATE',
+    'ADD_REQUEST': 'ADD_REQUEST'
 };
 
 export const PageActions = {
@@ -36,6 +37,10 @@ export const PageActions = {
     }),
     updateNetworkItems: (payload) => ({
         type: ActionsList.UPDATE_NETWORK_ITEMS,
+        payload
+    }),
+    addRequest: (payload) => ({
+        type: ActionsList.ADD_REQUEST,
         payload
     }),
     saveCurrentScreenState: (payload) => ({
@@ -89,7 +94,7 @@ export const PageActions = {
                     result = await web3.eth.getBalance(accountAddress);
                     provider.engine.stop();
 
-                    result = web3.utils.fromWei(result, 'ether');
+                    result = web3.fromWei(result, 'ether');
                 } catch(e) {
                     console.log('error while connect', e);
                     isConnected = false;
