@@ -6,8 +6,8 @@ import App from './components/App';
 import reducer from './reducers';
 import {StreamActionsController} from './controllers/stream-actoions-controller';
 
-export const streamActionsController = new StreamActionsController();
 export const store = createStore(reducer);
+export const streamActionsController = new StreamActionsController(store);
 
 render(
   <Provider store={store}>

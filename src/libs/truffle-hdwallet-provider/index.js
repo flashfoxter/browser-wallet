@@ -45,20 +45,23 @@ function HDWalletProvider(mnemonic, provider_url, address_index = 0, num_address
     this.engine.addProvider(new FiltersSubprovider());
 
     var httpProvider = new Web3.providers.HttpProvider(provider_url);
-    httpProvider.sendAsync = (payload, callback) => {
-        httpProvider.send(
-            payload,
-            (error, response) => {
+    if (!httpProvider.sendAsync) {
+        httpProvider.sendAsync = (payload, callback) => {
+            httpProvider.send(
+                payload,
+                (error, response) => {
 
-                if (error) {
-                    //throw error;
-                    callback(error, response);
-                } else {
-                    callback(error, response);
+                    if (error) {
+                        //throw error;
+                        callback(error, response);
+                    } else {
+                        callback(error, response);
+                    }
                 }
-            }
-        );
-    };
+            );
+        };
+    }
+
     this.engine.addProvider(new ProviderSubprovider(httpProvider));
     this.engineStartPromise = new Promise(
         (resolve, reject) => {
@@ -71,7 +74,7 @@ function HDWalletProvider(mnemonic, provider_url, address_index = 0, num_address
 };
 
 HDWalletProvider.prototype.sendAsync = function () {
-    this.engine.sendAsync.apply(this.engine, arguments);
+    return this.engine.sendAsync.apply(this.engine, arguments);
 };
 
 HDWalletProvider.prototype.send = function () {

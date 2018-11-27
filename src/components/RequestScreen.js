@@ -124,28 +124,46 @@ class RequestScreen extends Component {
     }
 
     async updateGasPrice() {
-        this.gasPrice = await this.testWeb3.eth.getGasPrice();
+        this.gasPrice = await new Promise((resolve, reject) => {
+            this.testWeb3.eth.getGasPrice((err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
         let gasPrice = this.testWeb3.toBigNumber(this.gasPrice);
         const commissionBN = gasPrice.mul(this.testWeb3.toBigNumber(DEFAULT_GASLIMIT));
+        console.log('commissionBN', commissionBN.toString(), gasPrice.toString(), this.gasPrice);
+        let com = this.testWeb3.fromWei(commissionBN, 'ether');
+        console.log('com', com.toString());
 
-        let commission = this.testWeb3.fromWei(commissionBN, 'ether');
-        this.setState({commission: commission});
+        //let commission = this.testWeb3.fromWei(commissionBN, 'ether');
+        this.setState({commission: com.toString()});
         this.provider.engine.stop();
         console.log('currentGasPrice', this.gasPrice);
     }
 
     async accept(event) {
         event.preventDefault();
-        const toAddress = this.state.address.value;
+
         const {currentAccounts, accountIndex} = this.props.accounts;
         const {balance, networkName} = this.props.wallet;
         const {requests, requestIndex} = this.props.requests;
         const requestInfo = requests[requestIndex];
         console.log('requestInfo', requestInfo);
 
+
+        let toAddress = '';
+        if (requestInfo) {
+            toAddress = requestInfo.data.to;
+        }
+
         const accountAddress = currentAccounts[accountIndex];
 
         let isValid = true;
+
 
         /*
         const amount = parseFloat(this.state.amount.value);
@@ -159,17 +177,22 @@ class RequestScreen extends Component {
             this.fields.amount.error = 'Amount mast be less then you have';
             isValid = false;
         }
+        */
 
-        if (!Web3.utils.isAddress(this.state.address.value)) {
+        if (!this.testWeb3.isAddress(toAddress)) {
             this.fields.address.error = 'Invalid address';
             isValid = false;
-        }*/
+        }
 
         const data = AuthHelper.getUserDataFormStorage(this.props.accounts.currentLogin, this.state.password.value);
         if (!data) {
             this.fields.password.error = 'Password is invalid';
             isValid = false;
         }
+
+        //const wallData = AuthHelper.getUserDataFormStorage('xamlo2', 'a1a2a3a4');
+        //console.log('wallData', wallData, this.testWeb3.accounts);
+        //isValid = false;
 
         if (isValid) {
             // connect
@@ -180,7 +203,7 @@ class RequestScreen extends Component {
                 to: toAddress,
                 gasPrice: this.gasPrice,
                 gas: DEFAULT_GASLIMIT,
-                value: this.testWeb3.toWei(this.state.amount.value, 'ether')
+                value: requestInfo.data.value
             };
 
             let networkUri = NetHelper.getNetworkUri(networkName);
@@ -198,6 +221,7 @@ class RequestScreen extends Component {
             this.setState({sendInProgress: true});
             try {
                 const transactionInfo = await web3.eth.sendTransaction(transactionObject);
+
                 console.log('TransactionInfo:', transactionInfo);
 
                 //show dialog
@@ -234,8 +258,8 @@ class RequestScreen extends Component {
         event.preventDefault();
 
         const {requests, requestIndex} = this.props.requests;
-        const requestInfo = requests[requestIndex];
-        console.log('requestsInfo', requests);
+        //const requestInfo = requests[requestIndex];
+        console.log('requestsInfo', requests, requestIndex);
     }
 
     setValue(event, fieldName) {
@@ -261,7 +285,14 @@ class RequestScreen extends Component {
 
     render() {
         const {classes} = this.props;
-        console.log('BN', this.props.wallet.balance);
+        const {requests, requestIndex} = this.props.requests;
+        const requestInfo = requests[requestIndex];
+
+        let amount = '0';
+        if (requestInfo) {
+            amount = this.testWeb3.fromWei(this.testWeb3.toBigNumber(requestInfo.data.value), 'ether').toString();
+        }
+
         return (
             <Grid
                 container
@@ -290,26 +321,33 @@ class RequestScreen extends Component {
                         justify='flex-start'>
                         <div>
                             <span className={classes.labelText}>Balance: </span>
-                            <span className={classes.amountText}>{this.props.wallet.balance.toString()} ETH {'suka'}</span>
+                            <span className={classes.amountText}>{this.props.wallet.balance} ETH</span>
                         </div>
                     </Grid>
-                    <Grid
-                        container
-                        style={{ paddingTop: '32px' }}
-                        justify='center'>
-                        <FormControl
-                            variant="filled"
-                            error={!!this.state.address.error}>
-                            <InputLabel htmlFor="component-filled">Send to</InputLabel>
-                            <FilledInput id="component-filled"
-                                         value={this.state.address.value}
-                                         onChange={event => this.setValue(event, FieldNames.address)} />
-                            {this.state.address.error
-                                ? <FormHelperText id="component-error-text">{this.state.address.error}</FormHelperText>
-                                : null
-                            }
-                        </FormControl>
-                    </Grid>
+                    {
+                        requestInfo
+                            ? <Grid
+                                container
+                                style={{paddingTop: '32px'}}
+                                justify='center'>
+
+                                <FormControl
+                                    variant="filled"
+                                    error={!!this.state.address.error}>
+                                    <InputLabel htmlFor="component-filled">Send to</InputLabel>
+                                    <FilledInput id="component-filled"
+                                                 disabled={true}
+                                                 value={requestInfo.data.to}
+                                                 onChange={event => this.setValue(event, FieldNames.address)}/>
+                                    {this.state.address.error
+                                        ? <FormHelperText
+                                            id="component-error-text">{this.state.address.error}</FormHelperText>
+                                        : null
+                                    }
+                                </FormControl>
+                              </Grid>
+                            : null
+                    }
                     <Grid
                         container
                         style={{ paddingTop: '32px' }}
@@ -319,9 +357,8 @@ class RequestScreen extends Component {
                             error={!!this.state.amount.error}>
                             <InputLabel htmlFor="component-filled">Amount</InputLabel>
                             <FilledInput id="component-filled"
-                                         value={this.state.amount.value}
-                                         disabled={true}
-                                         onChange={event => this.setValue(event, FieldNames.amount)} />
+                                         value={amount}
+                                         disabled={true} />
                             {this.state.amount.error
                                 ? <FormHelperText id="component-error-text">{this.state.amount.error}</FormHelperText>
                                 : null

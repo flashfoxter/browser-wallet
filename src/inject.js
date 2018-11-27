@@ -4,7 +4,7 @@ import {StreamObjectWrapper} from './models/StreamObjectWrapper';
 const LocalMessageDuplexStream = require('post-message-stream');
 import {ProxyProvider} from './libs/proxy-web3/proxy-provider';
 
-require('web3/dist/web3.min.js');
+require('./libs/web3/web3.min.js');
 
 class TigerWalletController {
     constructor() {

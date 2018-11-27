@@ -6,8 +6,9 @@ import { store } from '../index';
 import { ScreenNames } from '../reducers/screen';
 
 export class StreamActionsController {
-    constructor() {
+    constructor(store) {
         const extensionPort = extension.runtime.connect({ name: 'notification' });
+        this.store = store;
         this.connectionStream = new StreamObjectWrapper(new PortStream(extensionPort), 'notificationStream');
         this.setupEvents();
     }
@@ -18,7 +19,7 @@ export class StreamActionsController {
 
     addMessage(request) {
         console.log('I get request for transaction', request);
-        PageActions.addRequest(request);
+        store.dispatch(PageActions.addRequest(request));
         const {currentLogin} = store.getState().accounts;
         const {currentScreen} = store.getState().screen;
         if (currentLogin) {

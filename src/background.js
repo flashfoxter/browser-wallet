@@ -17,7 +17,7 @@ class MyExtension {
 
 
 const height = 640;
-const width = 390;
+const width = 376;
 
 
 class NotificationManager {

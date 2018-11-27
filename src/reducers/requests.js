@@ -9,6 +9,7 @@ const initialState = {
 const requests = createStoredReducer((state, action) => {
     switch (action.type) {
         case ActionsList.ADD_REQUEST: {
+            console.log('try to add request ', action.payload);
             const requests = state.requests.concat([action.payload]);
             const lastIndex = requests.length - 1;
             return Object.assign(

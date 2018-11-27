@@ -39,10 +39,13 @@ export const PageActions = {
         type: ActionsList.UPDATE_NETWORK_ITEMS,
         payload
     }),
-    addRequest: (payload) => ({
-        type: ActionsList.ADD_REQUEST,
-        payload
-    }),
+    addRequest: (payload) => {
+        console.log('generate addRequest action', payload);
+        return ({
+            type: ActionsList.ADD_REQUEST,
+            payload
+        })
+    },
     saveCurrentScreenState: (payload) => ({
         type: ActionsList.SAVE_CURRENT_SCREEN_STATE,
         payload

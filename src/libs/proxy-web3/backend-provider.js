@@ -31,6 +31,22 @@ function BackendProvider(provider_url, addresses=null, hook_cb) {
     this.engine.addProvider(new FiltersSubprovider());
 
     var httpProvider = new Web3.providers.HttpProvider(provider_url);
+    if (!httpProvider.sendAsync) {
+        httpProvider.sendAsync = (payload, callback) => {
+            httpProvider.send(
+                payload,
+                (error, response) => {
+
+                    if (error) {
+                        //throw error;
+                        callback(error, response);
+                    } else {
+                        callback(error, response);
+                    }
+                }
+            );
+        };
+    }
 
     this.engine.addProvider(new ProviderSubprovider(httpProvider));
     this.engineStartPromise = new Promise(
