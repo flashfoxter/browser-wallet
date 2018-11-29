@@ -22,14 +22,21 @@ export class StreamActionsController {
         store.dispatch(PageActions.addRequest(request));
         const {currentLogin} = store.getState().accounts;
         const {currentScreen} = store.getState().screen;
+        console.log('currentLogin', currentLogin, 'currentScreen', currentScreen);
         if (currentLogin) {
+
             if (currentScreen !== ScreenNames.REQUEST_SCREEN) {
-                PageActions.changeScreen(ScreenNames.REQUEST_SCREEN);
+                console.log('change screen');
+                this.store.dispatch(PageActions.changeScreen(ScreenNames.REQUEST_SCREEN));
             }
         } else {
             if (currentScreen !== ScreenNames.SIGN_IN_SCREEN) {
-                PageActions.changeScreen(ScreenNames.SIGN_IN_SCREEN);
+                this.store.dispatch(PageActions.changeScreen(ScreenNames.SIGN_IN_SCREEN));
             }
         }
+    }
+
+    sendResponse(responseMessage) {
+        this.connectionStream.emit('responseMessage', responseMessage);
     }
 }

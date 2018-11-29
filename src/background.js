@@ -136,6 +136,8 @@ class BackgroundController {
         this.readConfig();
         this.provider = null;
         this.requestIdMap = {};
+        this.requestIdToStreamMap = {};
+        this.requestIdToCallback = {};
         this.updateProviderInstance();
     }
 
@@ -171,11 +173,12 @@ class BackgroundController {
     hookRetranslatedCall(name, data, callback, additionalData) {
         console.log('hook', name, data, callback, additionalData);
         const request = {
-            callback,
             data,
             method: name,
             additionalData
         };
+
+        this.requestIdToCallback[additionalData.requestId] = callback;
         this.requestIdMap[additionalData.requestId] = request;
         if (this.notificationStream) {
             this.notificationStream.emit('addMessage', request);
@@ -219,11 +222,20 @@ class BackgroundController {
             this.contentpagesStreams.push(stream);
             stream.on('disconnect', () => {
                 this.contentpagesStreams = this.contentpagesStreams.filter(item => item.name !== stream.name);
+                Object.keys(this.requestIdToStreamMap).map(
+                    key => {
+                        if (this.requestIdToStreamMap[key] === stream) {
+                            delete this.requestIdToStreamMap[key];
+                            delete this.requestIdToCallback[key];
+                        }
+                    }
+                )
             });
 
             stream.on('sendAsync', data => {
                 console.log('get sendAsync request ', data);
                 const {requestId, payload} = data;
+                this.requestIdToStreamMap[requestId] = stream;
                 this.provider.sendAsync(payload, (err, response) => {
                     console.log('after do sendAsync request ', {response, err});
                     stream.emit('sendResponse', {requestId, payload: {response, err}});
@@ -232,6 +244,7 @@ class BackgroundController {
             stream.on('send', data => {
                 console.log('get send request ', data);
                 const {requestId, payload} = data;
+                this.requestIdToStreamMap[requestId] = stream;
                 this.provider.send(payload, (response, err) => {
                     console.log('after do send request ', {response, err});
                     stream.emit('sendResponse', {requestId, payload: {response, err}});
@@ -246,6 +259,7 @@ class BackgroundController {
             this.messagesForNotification.forEach(request => {
                 this.notificationStream.emit('addMessage', request);
             });
+            this.notificationStream.on('responseMessage', this.processResponseMessage.bind(this));
             this.messagesForNotification = [];
         } else if(processName === 'config') {
             if (this.configStream) this.configStream.close();
@@ -258,6 +272,19 @@ class BackgroundController {
             });
         }
 
+    }
+
+    processResponseMessage(responseMessage) {
+        const {additionalData, data} = responseMessage;
+        const {err, response} = data;
+        const stream = this.requestIdToStreamMap[additionalData.requestId];
+        console.log(responseMessage, this.requestIdToStreamMap, this.requestIdToCallback);
+        if (stream) {
+            //stream.emit('responseMessage', )
+            this.requestIdToCallback[additionalData.requestId](err, response);
+        } else {
+            console.trace('now cant find callback');
+        }
     }
 }
 

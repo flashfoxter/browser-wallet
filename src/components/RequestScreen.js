@@ -24,12 +24,14 @@ import CircularProgress from '../../node_modules/@material-ui/core/CircularProgr
 import Fade from '../../node_modules/@material-ui/core/Fade/Fade';
 import { PageActions } from '../actions/index';
 import { networks } from '../constants/networks';
+import { streamActionsController } from '../index';
 import AuthHelper from '../helpers/AuthHelper';
 import NetHelper from '../helpers/NetHelper';
 import InputFieldInState from '../models/InputFieldInState';
 import requests from '../reducers/requests';
 import { ScreenNames } from '../reducers/screen';
 import GoMainHeader from './GoMainHeader';
+import RequestSelector from './RequestSelector';
 import SimpleAccountSelector from './SimpleAccountSelector';
 import { mainColor, mainLightTextColor } from './StyledComponents';
 
@@ -133,10 +135,10 @@ class RequestScreen extends Component {
                 }
             });
         });
-        let gasPrice = this.testWeb3.toBigNumber(this.gasPrice);
-        const commissionBN = gasPrice.mul(this.testWeb3.toBigNumber(DEFAULT_GASLIMIT));
+        let gasPrice = this.testWeb3.utils.toBN(this.gasPrice);
+        const commissionBN = gasPrice.mul(this.testWeb3.utils.toBN(DEFAULT_GASLIMIT));
         console.log('commissionBN', commissionBN.toString(), gasPrice.toString(), this.gasPrice);
-        let com = this.testWeb3.fromWei(commissionBN, 'ether');
+        let com = this.testWeb3.utils.fromWei(commissionBN, 'ether');
         console.log('com', com.toString());
 
         //let commission = this.testWeb3.fromWei(commissionBN, 'ether');
@@ -179,7 +181,7 @@ class RequestScreen extends Component {
         }
         */
 
-        if (!this.testWeb3.isAddress(toAddress)) {
+        if (!this.testWeb3.utils.isAddress(toAddress)) {
             this.fields.address.error = 'Invalid address';
             isValid = false;
         }
@@ -197,6 +199,7 @@ class RequestScreen extends Component {
         if (isValid) {
             // connect
             let web3 = null;
+            console.log('form is valid');
 
             const transactionObject = {
                 from: accountAddress,
@@ -224,6 +227,12 @@ class RequestScreen extends Component {
 
                 console.log('TransactionInfo:', transactionInfo);
 
+                streamActionsController.sendResponse({
+                    requestId: requestInfo.requestId,
+                    additionalData: requestInfo.additionalData,
+                    data: {response: transactionInfo}
+                });
+
                 //show dialog
                 const amount = this.state.amount.value;
                 const hash = transactionInfo.transactionHash;
@@ -237,6 +246,12 @@ class RequestScreen extends Component {
                 });
             } catch (error) {
                 console.log('TransactionError:', error);
+
+                streamActionsController.sendResponse({
+                    requestId: requestInfo.requestId,
+                    additionalData: requestInfo.additionalData,
+                    data: {err: error}
+                });
                 //show dialog with error
                 this.setState({
                     openDialogue: true,
@@ -247,18 +262,20 @@ class RequestScreen extends Component {
             this.setState({sendInProgress: false});
             this.props.pageActions.getBalance();
 
+        } else {
+            console.log('form is invalid')
         }
     }
 
     async decline(event) {
         event.preventDefault();
+        this.props.pageActions.declineRequest();
     }
 
     async sall(event) {
         event.preventDefault();
-
         const {requests, requestIndex} = this.props.requests;
-        //const requestInfo = requests[requestIndex];
+
         console.log('requestsInfo', requests, requestIndex);
     }
 
@@ -279,7 +296,7 @@ class RequestScreen extends Component {
                 dialogueMessage: null
             });
         } else {
-            this.props.pageActions.changeScreen(ScreenNames.MAIN_SCREEN);
+            this.props.pageActions.declineRequest();
         }
     }
 
@@ -290,7 +307,7 @@ class RequestScreen extends Component {
 
         let amount = '0';
         if (requestInfo) {
-            amount = this.testWeb3.fromWei(this.testWeb3.toBigNumber(requestInfo.data.value), 'ether').toString();
+            amount = this.testWeb3.utils.fromWei(this.testWeb3.utils.toBN(requestInfo.data.value), 'ether').toString();
         }
 
         return (
@@ -312,18 +329,20 @@ class RequestScreen extends Component {
                         style={{ paddingTop: '0px' }}
                         justify='flex-start'>
                         <div>
-                            <span>Request info:</span>
-                        </div>
-                    </Grid>
-                    <Grid
-                        container
-                        style={{ paddingTop: '0px' }}
-                        justify='flex-start'>
-                        <div>
                             <span className={classes.labelText}>Balance: </span>
                             <span className={classes.amountText}>{this.props.wallet.balance} ETH</span>
                         </div>
                     </Grid>
+                    {
+                        requests.length
+                            ? <Grid
+                                container
+                                style={{paddingTop: '32px'}}
+                                justify='center'>
+                                <RequestSelector/>
+                              </Grid>
+                            : null
+                    }
                     {
                         requestInfo
                             ? <Grid

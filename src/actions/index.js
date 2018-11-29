@@ -12,6 +12,7 @@ export const ActionsList = {
     'UPDATE_NETWORK_ITEMS': 'UPDATE_NETWORK_ITEMS',
     'CHANGE_NETWORK': 'CHANGE_NETWORK',
     'CHANGE_ACCOUNT': 'CHANGE_ACCOUNT',
+    'CHANGE_REQUEST': 'CHANGE_REQUEST',
     'SEND_TRANSACTION': 'SEND_TRANSACTION',
     'GET_HISTORY': 'GET_HISTORY',
     'SIGN_UP': 'SIGN_UP',
@@ -20,7 +21,8 @@ export const ActionsList = {
     'CHANGE_SCREEN': 'CHANGE_SCREEN',
     'GO_BACK_SCREEN': 'GO_BACK_SCREEN',
     'SAVE_CURRENT_SCREEN_STATE': 'SAVE_CURRENT_SCREEN_STATE',
-    'ADD_REQUEST': 'ADD_REQUEST'
+    'ADD_REQUEST': 'ADD_REQUEST',
+    'DECLINE_REQUEST': 'DECLINE_REQUEST'
 };
 
 export const PageActions = {
@@ -39,13 +41,13 @@ export const PageActions = {
         type: ActionsList.UPDATE_NETWORK_ITEMS,
         payload
     }),
-    addRequest: (payload) => {
-        console.log('generate addRequest action', payload);
-        return ({
-            type: ActionsList.ADD_REQUEST,
-            payload
-        })
-    },
+    addRequest: (payload) => ({
+        type: ActionsList.ADD_REQUEST,
+        payload
+    }),
+    declineRequest: () => ({
+        type: ActionsList.DECLINE_REQUEST
+    }),
     saveCurrentScreenState: (payload) => ({
         type: ActionsList.SAVE_CURRENT_SCREEN_STATE,
         payload
@@ -56,6 +58,10 @@ export const PageActions = {
     }),
     changeAccount: (payload) => ({
         type: ActionsList.CHANGE_ACCOUNT,
+        payload
+    }),
+    changeRequest: (payload) => ({
+        type: ActionsList.CHANGE_REQUEST,
         payload
     }),
     disconnect: () => ({
@@ -97,7 +103,7 @@ export const PageActions = {
                     result = await web3.eth.getBalance(accountAddress);
                     provider.engine.stop();
 
-                    result = web3.fromWei(result, 'ether');
+                    result = web3.utils.fromWei(result, 'ether');
                 } catch(e) {
                     console.log('error while connect', e);
                     isConnected = false;

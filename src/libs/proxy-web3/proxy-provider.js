@@ -15,7 +15,7 @@ export class ProxyProvider {
     }
 
     send(payload, callback) {
-        //console.trace('sendSync', payload, callback);
+        console.trace('sendSync', payload, callback);
         if (callback) {
             this.sendAsync(payload, callback)
         } else {
@@ -27,7 +27,8 @@ export class ProxyProvider {
         const {requestId, payload} = data;
         if (this.idRequestsMap[requestId]) {
             const {response, err} = payload;
-            this.idRequestsMap[requestId](response, err);
+
+            this.idRequestsMap[requestId](err, response);
             delete this.idRequestsMap[requestId];
         } else {
             console.log('cant find callback in idRequestMap', data, this.idRequestsMap);
@@ -35,7 +36,7 @@ export class ProxyProvider {
     }
 
     _sendSync(payload) {
-        //console.trace('cant send sync', payload);
+        console.trace('cant send sync', payload);
         return new Promise((resolve, reject) => {
             this.sendAsync(payload, (result, err) => {
                 console.log('result, err', result, err);

@@ -52,7 +52,7 @@ export default {
         const response = await this.httpRequest(requestURI);
         const jsonResponse = JSON.parse(response);
 
-        return Web3.prototype.fromWei(jsonResponse.result, 'ether');
+        return Web3.utils.fromWei(jsonResponse.result, 'ether');
     },
     async getHistory(address, network) {
         const domain = ETHERSCAN_NETWORKS_URI_MAP[network];

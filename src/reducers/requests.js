@@ -18,6 +18,26 @@ const requests = createStoredReducer((state, action) => {
                 {requests, requestIndex: lastIndex}
             );
         }
+        case ActionsList.DECLINE_REQUEST: {
+            const requests = state.requests.concat();
+            requests.splice(state.requestIndex, 1);
+            let requestIndex = state.requestIndex;
+            if (requestIndex > 0) {
+                requestIndex--;
+            }
+            return Object.assign(
+                {},
+                state,
+                {requests, requestIndex}
+            );
+        }
+        case ActionsList.CHANGE_REQUEST: {
+            return Object.assign(
+                {},
+                state,
+                {requestIndex: action.payload}
+            );
+        }
         default:
             return state
     }

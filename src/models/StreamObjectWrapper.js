@@ -100,6 +100,7 @@ export class StreamObjectWrapper {
             this.connectionStream.write(JSON.stringify(sendObject));
         } catch(e) {
             //failed on write, need close connection
+            console.log(e);
             this.close();
         }
     }
