@@ -1,9 +1,11 @@
 import Backdrop from '@material-ui/core/Backdrop/Backdrop';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress/CircularProgress';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Fade from '@material-ui/core/Fade/Fade';
 import FilledInput from '@material-ui/core/FilledInput';
 import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -12,6 +14,7 @@ import IconButton from '@material-ui/core/IconButton';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import InputLabel from '@material-ui/core/InputLabel';
 import { withStyles } from '@material-ui/core/styles';
+import Tooltip from '@material-ui/core/Tooltip/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
@@ -20,15 +23,12 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Web3 from 'web3';
-import CircularProgress from '../../node_modules/@material-ui/core/CircularProgress/CircularProgress';
-import Fade from '../../node_modules/@material-ui/core/Fade/Fade';
 import { PageActions } from '../actions/index';
 import { networks } from '../constants/networks';
-import { streamActionsController } from '../index';
 import AuthHelper from '../helpers/AuthHelper';
 import NetHelper from '../helpers/NetHelper';
+import { streamActionsController } from '../index';
 import InputFieldInState from '../models/InputFieldInState';
-import requests from '../reducers/requests';
 import { ScreenNames } from '../reducers/screen';
 import GoMainHeader from './GoMainHeader';
 import RequestSelector from './RequestSelector';
@@ -119,7 +119,7 @@ class RequestScreen extends Component {
         }
         this.provider = new HDWalletProvider('', networkUri);
         this.testWeb3 = new Web3(this.provider);
-        console.log('w3', this.testWeb3, networkUri);
+
         this.gasPrice = 1000000000;
         this.updateGasPrice()
 
@@ -137,14 +137,11 @@ class RequestScreen extends Component {
         });
         let gasPrice = this.testWeb3.utils.toBN(this.gasPrice);
         const commissionBN = gasPrice.mul(this.testWeb3.utils.toBN(DEFAULT_GASLIMIT));
-        console.log('commissionBN', commissionBN.toString(), gasPrice.toString(), this.gasPrice);
-        let com = this.testWeb3.utils.fromWei(commissionBN, 'ether');
-        console.log('com', com.toString());
 
-        //let commission = this.testWeb3.fromWei(commissionBN, 'ether');
+        let com = this.testWeb3.utils.fromWei(commissionBN, 'ether');
+
         this.setState({commission: com.toString()});
         this.provider.engine.stop();
-        console.log('currentGasPrice', this.gasPrice);
     }
 
     async accept(event) {
@@ -167,21 +164,7 @@ class RequestScreen extends Component {
         let isValid = true;
 
 
-        /*
-        const amount = parseFloat(this.state.amount.value);
-        if (Number.isNaN(amount)) {
-            this.fields.amount.error = 'incorrect amount';
-            isValid = false;
-        } else if (amount <= 0) {
-            this.fields.amount.error = 'Amount mast be greater then 0';
-            isValid = false;
-        } else if (amount > balance) {
-            this.fields.amount.error = 'Amount mast be less then you have';
-            isValid = false;
-        }
-        */
-
-        if (!this.testWeb3.utils.isAddress(toAddress)) {
+        if (toAddress && !this.testWeb3.utils.isAddress(toAddress)) {
             this.fields.address.error = 'Invalid address';
             isValid = false;
         }
@@ -203,11 +186,18 @@ class RequestScreen extends Component {
 
             const transactionObject = {
                 from: accountAddress,
-                to: toAddress,
                 gasPrice: this.gasPrice,
-                gas: DEFAULT_GASLIMIT,
+                //gas: DEFAULT_GASLIMIT,
                 value: requestInfo.data.value
             };
+
+            if (toAddress) {
+                transactionObject.to = toAddress;
+            }
+
+            if (requestInfo.data.data) {
+                transactionObject.data = requestInfo.data.data;
+            }
 
             let networkUri = NetHelper.getNetworkUri(networkName);
             // authorize by mnemonic
@@ -223,6 +213,11 @@ class RequestScreen extends Component {
 
             this.setState({sendInProgress: true});
             try {
+
+                const gas = await web3.eth.estimateGas(transactionObject);
+                console.log('gas limit', gas);
+                transactionObject.gas = gas;
+
                 const transactionInfo = await web3.eth.sendTransaction(transactionObject);
 
                 console.log('TransactionInfo:', transactionInfo);
@@ -269,6 +264,20 @@ class RequestScreen extends Component {
 
     async decline(event) {
         event.preventDefault();
+
+        const {requests, requestIndex} = this.props.requests;
+        const requestInfo = requests[requestIndex];
+
+
+        streamActionsController.sendResponse({
+            requestId: requestInfo.requestId,
+            additionalData: requestInfo.additionalData,
+            data: {
+                err: {
+                    message: 'Request was rejected by user'
+                }
+            }
+        });
         this.props.pageActions.declineRequest();
     }
 
@@ -297,6 +306,11 @@ class RequestScreen extends Component {
             });
         } else {
             this.props.pageActions.declineRequest();
+            this.setState({
+                openDialogue: false,
+                dialogueTitle: '',
+                dialogueMessage: null
+            });
         }
     }
 
@@ -344,7 +358,7 @@ class RequestScreen extends Component {
                             : null
                     }
                     {
-                        requestInfo
+                        requests.length && requestInfo.data.to
                             ? <Grid
                                 container
                                 style={{paddingTop: '32px'}}
@@ -364,6 +378,40 @@ class RequestScreen extends Component {
                                         : null
                                     }
                                 </FormControl>
+                              </Grid>
+                            : null
+                    }
+                    {
+                        requests.length && requestInfo.additionalData.additionalData
+                            ? <Grid
+                                container
+                                style={{paddingTop: '32px'}}
+                                justify='flex-start'>
+                                <Tooltip title={requestInfo.additionalData.additionalData.location}>
+                                    <Typography noWrap={true} style={{width: '240px'}}>
+                                        Site location: {requestInfo.additionalData.additionalData.location}
+                                    </Typography>
+                                </Tooltip>
+                              </Grid>
+                            : null
+                    }
+                    {
+                        requests.length && requestInfo.data.data
+                            ? <Grid
+                                container
+                                style={{paddingTop: '32px'}}
+                                justify='flex-start'>
+                                <Typography>Deploy contract</Typography>
+                              </Grid>
+                            : null
+                    }
+                    {
+                        requests.length === 0
+                            ? <Grid
+                                container
+                                style={{paddingTop: '32px'}}
+                                justify='flex-start'>
+                                <Typography>No active requests</Typography>
                               </Grid>
                             : null
                     }
@@ -423,36 +471,34 @@ class RequestScreen extends Component {
                             }
                         </FormControl>
                     </Grid>
-                    <Grid
-                        container
-                        style={{ padding: '32px 0' }}
-                        justify='center'>
-                        <Button variant='contained'
-                                color='secondary'
-                                size='large'
-                                type='submit'
-                                onClick={this.accept.bind(this)}>Accept</Button>
-                    </Grid>
-                    <Grid
-                        container
-                        style={{ padding: '32px 0' }}
-                        justify='center'>
-                        <Button variant='contained'
-                                color='secondary'
-                                size='large'
-                                type='submit'
-                                onClick={this.decline.bind(this)}>Decline</Button>
-                    </Grid>
-                    <Grid
-                        container
-                        style={{ padding: '32px 0' }}
-                        justify='center'>
-                        <Button variant='contained'
-                                color='secondary'
-                                size='large'
-                                type='submit'
-                                onClick={this.sall.bind(this)}>ShowAll</Button>
-                    </Grid>
+                    {
+                        requests.length
+                            ? <Grid
+                                container
+                                style={{padding: '32px 0'}}
+                                justify='center'>
+                                <Button variant='contained'
+                                        color='secondary'
+                                        size='large'
+                                        type='submit'
+                                        onClick={this.accept.bind(this)}>Accept</Button>
+                              </Grid>
+                            : null
+                    }
+                    {
+                        requests.length
+                            ? <Grid
+                                container
+                                style={{padding: '32px 0'}}
+                                justify='center'>
+                                <Button variant='contained'
+                                        color='secondary'
+                                        size='large'
+                                        type='submit'
+                                        onClick={this.decline.bind(this)}>Decline</Button>
+                              </Grid>
+                            : null
+                    }
                 </form>
                 {this.state.sendInProgress
                     ? <Backdrop open={this.state.sendInProgress} className={classes.backdrop}/>

@@ -2,18 +2,7 @@ import extension from 'extensionizer';
 import NetHelper from './helpers/NetHelper';
 import {StreamObjectWrapper} from './models/StreamObjectWrapper';
 const PortStream = require('extension-port-stream');
-import {networks} from './constants/networks';
 import BackendProvider from './libs/proxy-web3/backend-provider';
-
-class MyExtension {
-    sendMessage(message, query = {}) {
-        extension.tabs.query(query, tabs => {
-            tabs.forEach(tab => {
-                extension.tabs.sendMessage(tab.id, message)
-            })
-        })
-    }
-}
 
 
 const height = 640;
@@ -21,19 +10,6 @@ const width = 376;
 
 
 class NotificationManager {
-
-    /**
-     * A collection of methods for controlling the showing and hiding of the notification popup.
-     *
-     * @typedef {Object} NotificationManager
-     *
-     */
-
-    /**
-     * Either brings an existing MetaMask notification window into focus, or creates a new notification window. New
-     * notification windows are given a 'popup' type.
-     *
-     */
     showPopup () {
         this._getPopup((err, popup) => {
             if (err) throw err;
@@ -56,10 +32,6 @@ class NotificationManager {
         })
     }
 
-    /**
-     * Closes a MetaMask notification if it window exists.
-     *
-     */
     closePopup () {
         // closes notification popup
         this._getPopup((err, popup) => {
@@ -69,14 +41,6 @@ class NotificationManager {
         })
     }
 
-    /**
-     * Checks all open MetaMask windows, and returns the first one it finds that is a notification window (i.e. has the
-     * type 'popup')
-     *
-     * @private
-     * @param {Function} cb A node style callback that to whcih the found notification window will be passed.
-     *
-     */
     _getPopup (cb) {
         this._getWindows((err, windows) => {
             if (err) throw err;
@@ -84,13 +48,6 @@ class NotificationManager {
         })
     }
 
-    /**
-     * Returns all open MetaMask windows.
-     *
-     * @private
-     * @param {Function} cb A node style callback that to which the windows will be passed.
-     *
-     */
     _getWindows (cb) {
         // Ignore in test environment
         if (!extension.windows) {
@@ -102,13 +59,6 @@ class NotificationManager {
         })
     }
 
-    /**
-     * Given an array of windows, returns the 'popup' that has been opened by MetaMask, or null if no such window exists.
-     *
-     * @private
-     * @param {array} windows An array of objects containing data about the open MetaMask extension windows.
-     *
-     */
     _getPopupIn (windows) {
         return windows ? windows.find((win) => {
             // Returns notification popup
@@ -158,7 +108,6 @@ class BackgroundController {
 
     updateProviderInstance() {
         const {networkName, currentAccounts, accountIndex} = this.providerConfig;
-        console.log('this.providerConfig', this.providerConfig);
         const accountAddress = currentAccounts.length ? currentAccounts[accountIndex] : '';
         let networkUri = NetHelper.getNetworkUri(networkName);
 
@@ -171,7 +120,6 @@ class BackgroundController {
     }
 
     hookRetranslatedCall(name, data, callback, additionalData) {
-        console.log('hook', name, data, callback, additionalData);
         const request = {
             data,
             method: name,
@@ -194,31 +142,10 @@ class BackgroundController {
 
     connectRemote (remotePort) {
         const processName = remotePort.name;
-        console.log('remotePort', processName, remotePort);
         const portStream = new PortStream(remotePort);
         if (processName === 'tigercontent') {
             const stream = new StreamObjectWrapper(portStream, 'backendToContent');
 
-            /*
-            stream.on('openPopup', (popupData) => {
-                this.notificationManager.showPopup();
-                if (this.notificationStream) {
-                    this.notificationStream.emit('openPopup', {
-                        from: stream.name,
-                            popupData
-                    });
-                } else {
-                    this.messagesForNotification.push(
-                        {
-                            event: 'openPopup',
-                            data: {
-                                from: stream.name,
-                                popupData
-                            },
-                        }
-                    );
-                }
-            });*/
             this.contentpagesStreams.push(stream);
             stream.on('disconnect', () => {
                 this.contentpagesStreams = this.contentpagesStreams.filter(item => item.name !== stream.name);
@@ -233,20 +160,18 @@ class BackgroundController {
             });
 
             stream.on('sendAsync', data => {
-                console.log('get sendAsync request ', data);
                 const {requestId, payload} = data;
+
                 this.requestIdToStreamMap[requestId] = stream;
                 this.provider.sendAsync(payload, (err, response) => {
-                    console.log('after do sendAsync request ', {response, err});
                     stream.emit('sendResponse', {requestId, payload: {response, err}});
-                }, data)
+                }, data);
             });
             stream.on('send', data => {
-                console.log('get send request ', data);
                 const {requestId, payload} = data;
+
                 this.requestIdToStreamMap[requestId] = stream;
                 this.provider.send(payload, (response, err) => {
-                    console.log('after do send request ', {response, err});
                     stream.emit('sendResponse', {requestId, payload: {response, err}});
                 }, data)
             });
@@ -255,12 +180,15 @@ class BackgroundController {
             if (this.notificationStream) this.notificationStream.close();
 
             this.notificationStream = new StreamObjectWrapper(portStream, 'backendToNotification');
-            this.notificationStream.on('disconnect', () => {this.notificationStream = null});
+            this.notificationStream.on('disconnect', () => {
+                this.notificationStream = null;
+            });
             this.messagesForNotification.forEach(request => {
                 this.notificationStream.emit('addMessage', request);
             });
             this.notificationStream.on('responseMessage', this.processResponseMessage.bind(this));
             this.messagesForNotification = [];
+
         } else if(processName === 'config') {
             if (this.configStream) this.configStream.close();
 
@@ -278,9 +206,9 @@ class BackgroundController {
         const {additionalData, data} = responseMessage;
         const {err, response} = data;
         const stream = this.requestIdToStreamMap[additionalData.requestId];
-        console.log(responseMessage, this.requestIdToStreamMap, this.requestIdToCallback);
+
         if (stream) {
-            //stream.emit('responseMessage', )
+            stream.emit('responseMessage have stream')
             this.requestIdToCallback[additionalData.requestId](err, response);
         } else {
             console.trace('now cant find callback');

@@ -1,9 +1,11 @@
 import Backdrop from '@material-ui/core/Backdrop/Backdrop';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress/CircularProgress';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Fade from '@material-ui/core/Fade/Fade';
 import FilledInput from '@material-ui/core/FilledInput';
 import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -20,8 +22,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Web3 from 'web3';
-import CircularProgress from '../../node_modules/@material-ui/core/CircularProgress/CircularProgress';
-import Fade from '../../node_modules/@material-ui/core/Fade/Fade';
 import { PageActions } from '../actions/index';
 import { networks } from '../constants/networks';
 import AuthHelper from '../helpers/AuthHelper';
@@ -116,7 +116,7 @@ class SendScreen extends Component {
         }
         this.provider = new HDWalletProvider('', networkUri);
         this.testWeb3 = new Web3(this.provider);
-        console.log('w3', this.testWeb3, networkUri);
+
         this.gasPrice = 1000000000;
         this.updateGasPrice()
 
@@ -131,7 +131,6 @@ class SendScreen extends Component {
         let commission = this.testWeb3.utils.fromWei(commissionBN, 'ether');
         this.setState({commission: commission});
         this.provider.engine.stop();
-        console.log('currentGasPrice', this.gasPrice);
     }
 
     async sendTo(event) {

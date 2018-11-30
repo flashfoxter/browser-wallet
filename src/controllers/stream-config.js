@@ -1,6 +1,6 @@
 import PortStream from 'extension-port-stream';
 import extension from 'extensionizer';
-import {StreamObjectWrapper} from './models/StreamObjectWrapper';
+import {StreamObjectWrapper} from '../models/StreamObjectWrapper';
 
 export class StreamConfigController {
     constructor() {
@@ -8,7 +8,7 @@ export class StreamConfigController {
         this.connectionStream = new StreamObjectWrapper(new PortStream(extensionPort), 'configStream');
     }
 
-    setupEvents() {
-
+    sendConfigChanges(changes) {
+        this.connectionStream.emit('configChange', changes);
     }
 }

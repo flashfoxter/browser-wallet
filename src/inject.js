@@ -9,14 +9,6 @@ require('./libs/web3/web3.min.js');
 class TigerWalletController {
     constructor() {
 
-        //function onMessage(messageType, handler, remove) {
-        //    window.addEventListener('message', function ({ data }) {
-        //        if (!data || data.type !== messageType) { return }
-        //        remove && window.removeEventListener('message', handler);
-        //        handler.apply(window, arguments)
-        //    })
-        //}
-
         //
         // setup plugin communication
         //
@@ -25,11 +17,9 @@ class TigerWalletController {
         var walletStream = new StreamObjectWrapper(new LocalMessageDuplexStream({
             name: 'tigerinpage',
             target: 'tigercontent',
-        }), 'inpageToContent');
+        }), 'inpageToContent', {location: window.location.href});
 
-        console.log('walletStream', walletStream, 'location:', window.location.href);
-
-        //const provider =
+        //console.log('walletStream', walletStream, 'location:', window.location.href);
 
         this.walletStream = walletStream;
         window.walletStream = walletStream;
@@ -61,7 +51,7 @@ restoreContextAfterImports();
 // need to make sure we aren't affected by overlapping namespaces
 // and that we dont affect the app with our namespace
 // mostly a fix for web3's BigNumber if AMD's "define" is defined...
-var __define
+var __define;
 
 /**
  * Caches reference to global define object and deletes it to
@@ -69,11 +59,11 @@ var __define
  * AMD's define function
  */
 function cleanContextForImports () {
-    __define = global.define
+    __define = global.define;
     try {
-        global.define = undefined
+        global.define = undefined;
     } catch (_) {
-        console.warn('MetaMask - global.define could not be deleted.')
+        console.warn('TigerWallet - global.define could not be deleted.');
     }
 }
 
@@ -82,8 +72,8 @@ function cleanContextForImports () {
  */
 function restoreContextAfterImports () {
     try {
-        global.define = __define
+        global.define = __define;
     } catch (_) {
-        console.warn('MetaMask - global.define could not be overwritten.')
+        console.warn('TigerWallet - global.define could not be overwritten.');
     }
 }

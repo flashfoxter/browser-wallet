@@ -16,10 +16,10 @@ export default {
     getUserDataFormStorage(login, password) {
         const encodedData = localStorage.getItem(USER_PREFIX + login.toLowerCase());
         if (encodedData) {
-            console.log('encodedData', encodedData);
+            // console.log('encodedData', encodedData);
             try {
                 const dataStr = Aes256.decrypt(password, encodedData);
-                console.log('dataStr', dataStr);
+                // console.log('dataStr', dataStr);
                 return JSON.parse(dataStr);
             } catch (e) {
                 console.log('err', e);

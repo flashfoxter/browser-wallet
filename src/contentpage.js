@@ -3,10 +3,6 @@ const extension = require('extensionizer');
 const PortStream = require('extension-port-stream');
 const LocalMessageDuplexStream = require('post-message-stream');
 const injectContent = require('./../inject.js');
-const Web3 = require('web3');
-
-//const CDN_REQUIRE = 'https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js';
-//const CDN_WEB3 = 'https://cdn.jsdelivr.net/npm/web3@0.20.7/dist/web3.min.js';
 
 class ContentController {
     constructor() {
@@ -57,7 +53,7 @@ class ContentController {
         if (!this.isConnectedBackground) {
             const pluginPort = extension.runtime.connect({ name: 'tigercontent' });
             const pluginStream = new PortStream(pluginPort);
-            this.backgroundStream = new StreamObjectWrapper(pluginStream, 'contentpageToBackend');
+            this.backgroundStream = new StreamObjectWrapper(pluginStream, 'contentpageToBackend', this.inpageStream.pairAdditionalData);
             this.isConnectedBackground = true;
             this.backgroundStream.on('disconnect', () => {
                 this.isConnectedBackground = false;
@@ -72,7 +68,6 @@ class ContentController {
     }
 
     retranslateBack(eventName, data) {
-        console.log('retranslateBack');
         this.inpageStream.emit(eventName, data);
     }
 }

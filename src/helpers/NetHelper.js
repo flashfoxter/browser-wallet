@@ -60,7 +60,7 @@ export default {
         const requestURI = domain + '/api?module=account&action=txlist&address='
             + address + '&startblock=0&endblock=99999999&sort=asc&apikey=' + ETHERSCAN_TOKEN;
         const response = JSON.parse(await this.httpRequest(requestURI));
-        console.log(response);
+        // console.log(response);
         return response;
     },
     async getAbi(address, network) {

@@ -60,13 +60,12 @@ function BackendProvider(provider_url, addresses=null, hook_cb) {
 };
 
 BackendProvider.prototype.sendAsync = function () {
-    console.log('send async BackendProvider2', arguments, this.engine.sendAsync);
     this.lastAdditionalData = arguments[2];
     this.engine.sendAsync.apply(this.engine, arguments);
 };
 
 BackendProvider.prototype.send = function () {
-    console.log('send Sync', arguments);
+    //console.log('send Sync', arguments);
     return this.engine.send.apply(this.engine, arguments);
 };
 

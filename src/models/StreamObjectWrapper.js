@@ -6,13 +6,15 @@ function generateStreamId() {
     return streamId++;
 }
 export class StreamObjectWrapper {
-    constructor(connectionStream, name) {
+    constructor(connectionStream, name, additionalData) {
         this.connectionStream = connectionStream;
         this.subscriptions = {};
         this.lastPingId = 0;
         this.lastPingTime = 0;
         this.pingValue = 0;
         this.name = (name ? name : 'unnamed') + generateStreamId();
+        this.pairAdditionalData = {};
+        this.additionalData = additionalData;
         this.pairName = '';
         this.handleData = (dataStr) => {
             try {
@@ -29,7 +31,7 @@ export class StreamObjectWrapper {
                 }
             } catch(e) {
                 console.log('cant parse', dataStr);
-                throw e;
+                //throw e;
             }
         };
         this.connectionStream.on('data', this.handleData);
@@ -37,13 +39,14 @@ export class StreamObjectWrapper {
             if (id === this.lastPingId) {
                 this.pingValue = Date.now() - this.lastPingTime;
             } else {
-                console.log('Pong but...', this.lastPingId, id);
+                //console.log('Pong but...', this.lastPingId, id);
             }
         });
-        this.on('pairName', (name) => {
+        this.on('pairName', ({name, additionalData}) => {
             this.pairName = name;
+            this.pairAdditionalData = additionalData
         });
-        this.emit('pairName', this.name);
+        this.emit('pairName', {name: this.name, additionalData});
         this.on('ping', (id) => {
             this.emit('pong', id);
         });
@@ -52,7 +55,6 @@ export class StreamObjectWrapper {
             () => {
                 // console.log('ping value:', this.pingValue, 'name:', this.name, 'pairName:', this.pairName);
                 if (this.pingValue > PING_PONG_TIMEOUT) {
-                    console.log('check failed', this.pingValue);
                     this.close();
                 }
             },
@@ -81,8 +83,8 @@ export class StreamObjectWrapper {
             this.subscriptions.disconnect = cb;
 
             this.connectionStream.on('end', () => {
-                cb();
                 this.close();
+                this.subscriptions.disconnect();
             });
 
         } else {
@@ -101,6 +103,9 @@ export class StreamObjectWrapper {
         } catch(e) {
             //failed on write, need close connection
             console.log(e);
+            if (this.subscriptions.disconnect) {
+                this.subscriptions.disconnect();
+            }
             this.close();
         }
     }

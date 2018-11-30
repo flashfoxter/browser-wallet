@@ -8,14 +8,13 @@ export class ProxyProvider {
     }
 
     sendAsync(payload, callback) {
-        //console.log('sendAsync', payload, callback);
         const currentRequestId = this.generarateNewId();
         this.idRequestsMap[currentRequestId] = callback;
-        this.stream.emit('sendAsync', {payload, requestId: currentRequestId});
+        this.stream.emit('sendAsync', {payload, requestId: currentRequestId, additionalData: this.stream.additionalData});
     }
 
     send(payload, callback) {
-        console.trace('sendSync', payload, callback);
+        //console.trace('sendSync', payload, callback);
         if (callback) {
             this.sendAsync(payload, callback)
         } else {
@@ -36,10 +35,10 @@ export class ProxyProvider {
     }
 
     _sendSync(payload) {
-        console.trace('cant send sync', payload);
+        console.trace('cant send sync', payload, ' Promise will be returned');
         return new Promise((resolve, reject) => {
-            this.sendAsync(payload, (result, err) => {
-                console.log('result, err', result, err);
+            this.sendAsync(payload, (err, result) => {
+                console.log('Promise: err is ', err, ' result is ', result);
                 if (err) {
                     reject(err);
                 } else {

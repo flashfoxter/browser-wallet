@@ -259,7 +259,7 @@ class ContractScreen extends Component {
                         this.contractData = null;
                         abiFileError = 'Selected file does not contain the correct privateKey';
                     }
-                    console.log('afterSelect:', abiFileError, theFile.name);
+
                     this.setState({abiFileName: theFile.name, abiFileError});
                     this.saveState();
 
@@ -277,14 +277,14 @@ class ContractScreen extends Component {
     }
 
     readABI(contractAbi) {
-        console.log('contract content', contractAbi);
+
         this.abiMethods = NetHelper.readAbi(contractAbi);
         if (!this.abiMethods) {
             throw new Error('invalid abi file');
         }
         const web3 = new Web3();
         this.contractData = new web3.eth.Contract(JSON.parse(contractAbi));
-        console.log('contract content', this.contractData, this.abiMethods);
+
         this.abiData = JSON.parse(contractAbi);
 
         const methodName = Object.keys(this.abiMethods)[0];
@@ -327,7 +327,6 @@ class ContractScreen extends Component {
     }
 
     handleOpenMethodSelect() {
-        console.log('handleOpenMethodSelect');
         this.setState({openSelectDialog: true});
         this.saveState();
     }
@@ -391,12 +390,12 @@ class ContractScreen extends Component {
                 } catch(e) {
                     isValid = false;
                     inputDef.error = 'Invalid format: ' + e.message;
-                    console.log('parse Error', inputDef);
                 }
                 args.push(data);
             } else {
                 amount = parseFloat(inputDef['value']);
                 amount_str = inputDef['value'];
+
                 if (Number.isNaN(amount)) {
                     inputDef['error'] = 'incorrect amount';
                     isValid = false;
@@ -445,7 +444,7 @@ class ContractScreen extends Component {
                     const method = contract.methods[this.state.methodName]
                         .apply(contract, args);
                     const gasLimit = await method.estimateGas(optionsObject);
-                    console.log('gasLimit', gasLimit);
+
                     optionsObject.gas = gasLimit;
                     optionsObject.gasPrice = this.gasPrice;
                     if (amount) {

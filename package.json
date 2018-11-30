@@ -5,16 +5,15 @@
   "scripts": {
     "build:app": "browserify -t [ babelify --presets [ es2015 react stage-1 ] --plugins transform-runtime] src/index.js -o app.js",
     "build:background": "browserify -t [ babelify --presets [ es2015 react stage-1 ] --plugins transform-runtime] src/background.js -o background.js",
-    "build:notifications": "browserify -t [ babelify --presets [ es2015 react stage-1 ] --plugins transform-runtime] src/notifications.js -o notifications.js",
     "build:contentpage": "browserify -t [ babelify --presets [ es2015 react stage-1 ] --plugins transform-runtime] src/contentpage.js -o contentpage.js",
     "build:inject": "browserify -t [ babelify --presets [ es2015 react stage-1 ] --plugins transform-runtime] src/inject.js -o inject_out.js",
     "build:expinject": "node generate-inject.js",
-    "build": "npm run build:inject && npm run build:expinject && npm run build:app && npm run build:background && npm run build:notifications && npm run build:contentpage",
+    "build": "npm run build:inject && npm run build:expinject && npm run build:app && npm run build:background && npm run build:contentpage",
     "build:dist": "npm run clean && npm run mkdirs && npm run copyfiles && npm run copyfiles2",
     "mkdirs": "mkdir dist && cd dist && mkdir icons",
     "clean": "rimraf dist",
     "copyfiles": "cp -r icons/* dist/icons && cp app.js dist && cp popup.html dist && cp manifest.json dist && cp wallet-logo.png dist",
-    "copyfiles2": "cp background.js dist && cp notification.html dist && cp notifications.js dist && cp contentpage.js dist && cp inject.js dist && cp proxy-mode.js dist"
+    "copyfiles2": "cp background.js dist && cp notification.html dist && cp contentpage.js dist && cp inject.js dist && cp proxy-mode.js dist"
   },
   "dependencies": {
     "@material-ui/core": "^3.2.0",
