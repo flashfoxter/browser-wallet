@@ -25,14 +25,13 @@ import Web3 from 'web3';
 import { PageActions } from '../actions/index';
 import { networks } from '../constants/networks';
 import AuthHelper from '../helpers/AuthHelper';
+import HDWalletProvider from '../libs/truffle-hdwallet-provider';
 import NetHelper from '../helpers/NetHelper';
 import InputFieldInState from '../models/InputFieldInState';
 import { ScreenNames } from '../reducers/screen';
 import GoMainHeader from './GoMainHeader';
 import SimpleAccountSelector from './SimpleAccountSelector';
 import { mainColor, mainLightTextColor } from './StyledComponents';
-
-const HDWalletProvider = require('../libs/truffle-hdwallet-provider');
 
 const styles = theme => ({
     container: {
@@ -180,8 +179,10 @@ class SendScreen extends Component {
 
             let networkUri = NetHelper.getNetworkUri(networkName);
             // authorize by mnemonic
+            let onEnd = () => {};
             if (typeof data === 'string') {
                 const provider = new HDWalletProvider(data, networkUri, 0, 10);
+                onEnd = () => {provider.engine.stop()};
                 web3 = new Web3(provider);
 
                 web3.eth.defaultAccount = accountAddress;
@@ -215,6 +216,7 @@ class SendScreen extends Component {
                     dialogueMessage: "Error description:\n" + error.message
                 });
             }
+            onEnd();
             this.setState({sendInProgress: false});
             this.props.pageActions.getBalance();
 

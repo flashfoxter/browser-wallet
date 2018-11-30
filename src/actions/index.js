@@ -93,7 +93,6 @@ export const PageActions = {
             if (networks[networkName]) {
                 result = await NetHelper.getBalance(accountAddress, networkName);
             } else {
-
                 try {
                     const provider = new HDWalletProvider('', networkName);
                     await provider.engineStartPromise;

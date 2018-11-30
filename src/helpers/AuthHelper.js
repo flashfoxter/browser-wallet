@@ -9,17 +9,14 @@ export default {
         const dataStr = JSON.stringify(data);
 
         const encodedData = Aes256.encrypt(password, dataStr);
-        console.log(USER_PREFIX + login.toLowerCase(),'data: ', encodedData);
         localStorage.setItem(USER_PREFIX + login.toLowerCase(), encodedData);
     },
 
     getUserDataFormStorage(login, password) {
         const encodedData = localStorage.getItem(USER_PREFIX + login.toLowerCase());
         if (encodedData) {
-            // console.log('encodedData', encodedData);
             try {
                 const dataStr = Aes256.decrypt(password, encodedData);
-                // console.log('dataStr', dataStr);
                 return JSON.parse(dataStr);
             } catch (e) {
                 console.log('err', e);
