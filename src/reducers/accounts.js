@@ -1,5 +1,6 @@
 import { ActionsList } from '../actions';
 import AuthHelper from '../helpers/AuthHelper';
+import { streamConfig } from '../index';
 import { createStoredReducer } from '../models/StoredReducer';
 
 const initialState = {
@@ -12,10 +13,24 @@ const accounts = createStoredReducer((state, action) => {
     switch (action.type) {
         case ActionsList.CHANGE_ACCOUNT:
             const {accountIndex} = action.payload;
+
+            try {
+                streamConfig.sendConfigChanges({accountIndex});
+            } catch(e) {
+                console.log('error while send config');
+            }
+
             return Object.assign({}, state, {accountIndex});
 
         case ActionsList.SIGN_UP:
             const {login, password, mnemonic, accounts, account} = action.payload;
+
+            try {
+                streamConfig.sendConfigChanges({currentAccounts: accounts, accountIndex: 0});
+            } catch(e) {
+                console.log('error while send config');
+            }
+
             if (mnemonic) {
                 AuthHelper.addUserToStorage(login, password, mnemonic);
             } else {
@@ -31,6 +46,12 @@ const accounts = createStoredReducer((state, action) => {
                 }
             );
         case ActionsList.LOG_OUT:
+            try {
+                streamConfig.sendConfigChanges({currentAccounts: [], accountIndex: 0});
+            } catch(e) {
+                console.log('error while send config');
+            }
+
             return Object.assign(
                 {},
                 state,
@@ -42,6 +63,13 @@ const accounts = createStoredReducer((state, action) => {
             );
         case ActionsList.SIGN_IN: {
                 const {login, accounts} = action.payload;
+
+                try {
+                    streamConfig.sendConfigChanges({currentAccounts: accounts, accountIndex: 0});
+                } catch(e) {
+                    console.log('error while send config');
+                }
+
                 return Object.assign(
                     {},
                     state,

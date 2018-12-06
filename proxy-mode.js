@@ -1,0 +1,1 @@
+window.work_mode = 'proxy';

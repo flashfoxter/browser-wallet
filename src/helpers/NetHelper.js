@@ -58,25 +58,87 @@ export default {
         const domain = ETHERSCAN_NETWORKS_URI_MAP[network];
 
         const requestURI = domain + '/api?module=account&action=txlist&address='
-                + address + '&startblock=0&endblock=99999999&sort=asc&apikey=' + ETHERSCAN_TOKEN;
+            + address + '&startblock=0&endblock=99999999&sort=asc&apikey=' + ETHERSCAN_TOKEN;
         const response = JSON.parse(await this.httpRequest(requestURI));
 
         return response;
     },
-    async getBalanceCustomRpc(uri, address, network) {
-        const requestURI = 'https://api.infura.io/v1/jsonrpc/'
-            + network + '/eth_getBalance?params=[%22'
-            + address + '%22,%22latest%22]';
+    async getAbi(address, network) {
+        const domain = ETHERSCAN_NETWORKS_URI_MAP[network];
 
-        const getBlockRequest = {
-            id: 5311408654528138,
-            jsonrpc: "2.0",
-            method: "eth_getBlockByNumber",
-            params: ["latest", true]
-        };
-        const response = await this.httpRequest(requestURI);
-        const jsonResponse = JSON.parse(response);
+        const requestURI = domain + '/api?module=contract&action=getabi&address='
+            + address + '&apikey=' + ETHERSCAN_TOKEN;
+        const response = JSON.parse(await this.httpRequest(requestURI));
 
-        return Web3.utils.fromWei(jsonResponse.result, 'ether');
+        return response && response.status === '1' ? response.result : '';
     },
+    readAbi(jsonString) {
+        let unnamed = 0;
+        const checkMethodDesk = function(methodDesc) {
+            let isValid = true;
+
+            try {
+                if (methodDesc['type'] && methodDesc['type'] === 'event') {
+                    isValid = isValid && methodDesc['name'];
+
+                } else {
+                    isValid = isValid && methodDesc['type']
+                        && ['function', 'constructor', 'fallback'].indexOf(methodDesc['type']) > -1;
+
+                    isValid = isValid && methodDesc['stateMutability']
+                        && ['view', 'nonpayable', 'payable'].indexOf(methodDesc['stateMutability']) > -1;
+
+                    if (isValid && methodDesc['name'] && methodDesc['type'] !== 'fallback') {
+                        if (methodDesc['inputs']) {
+                            methodDesc['inputs'].forEach(argDesc => {
+                                isValid = isValid && argDesc['name'];
+                                isValid = isValid && argDesc['type'];
+                            });
+                        }
+                    } else {
+                        unnamed++;
+                        isValid = isValid && unnamed === 1;
+                        isValid = isValid && methodDesc['inputs'].length === 0;
+                        isValid = isValid && methodDesc['outputs'].length === 0;
+                    }
+                }
+            } catch(e) {
+                isValid = false;
+            }
+
+            return isValid;
+        };
+        try {
+            const AbiMethodsDesc = JSON.parse(jsonString);
+            const methodsObj = {};
+            if (!Array.isArray(AbiMethodsDesc)) {
+                return false;
+            }
+
+            AbiMethodsDesc.forEach(methodDesc => {
+                if (checkMethodDesk(methodDesc)) {
+                    let name = methodDesc['name'];
+                    if (!name) {
+                        name = 'default'
+                    }
+                    if (methodDesc['type'] && methodDesc['type'] !== 'event') {
+                        methodsObj[name] = methodDesc;
+                    }
+                }
+
+            });
+            return methodsObj;
+        } catch(e) {
+            return false;
+        }
+    },
+    getNetworkUri(networkName) {
+        let networkUri = networkName;
+
+        if (networks[networkName]) {
+            networkUri = `https://${networkName}.infura.io/v3/ac236de4b58344d88976c12184cde32f`;
+        }
+
+        return networkUri;
+    }
 };

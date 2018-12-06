@@ -244,7 +244,7 @@ class Transactions extends Component {
                         this.setState({transactions: historyData});
 
                     } catch(e) {
-                        console.log('error while api req:',e);
+                        console.log('error while api req:', e);
                         this.setState({getTransactionsError: 'can\'t get history'});
                     }
 
@@ -274,7 +274,7 @@ class Transactions extends Component {
                     this.setState({transactions: historyData});
 
                 } catch(e) {
-                    console.log('error while api req:',e);
+                    console.log('error while api req:', e);
                     this.setState({getTransactionsError: 'can\'t get history'});
                 }
                 this.setState({

@@ -14,6 +14,7 @@ import IconButton from '@material-ui/core/IconButton';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import InputLabel from '@material-ui/core/InputLabel';
 import { withStyles } from '@material-ui/core/styles';
+import Tooltip from '@material-ui/core/Tooltip/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
@@ -25,13 +26,16 @@ import Web3 from 'web3';
 import { PageActions } from '../actions/index';
 import { networks } from '../constants/networks';
 import AuthHelper from '../helpers/AuthHelper';
-import HDWalletProvider from '../libs/truffle-hdwallet-provider';
 import NetHelper from '../helpers/NetHelper';
+import { streamActionsController } from '../index';
 import InputFieldInState from '../models/InputFieldInState';
 import { ScreenNames } from '../reducers/screen';
 import GoMainHeader from './GoMainHeader';
+import RequestSelector from './RequestSelector';
 import SimpleAccountSelector from './SimpleAccountSelector';
 import { mainColor, mainLightTextColor } from './StyledComponents';
+
+const HDWalletProvider = require('../libs/truffle-hdwallet-provider');
 
 const styles = theme => ({
     container: {
@@ -84,7 +88,7 @@ const FieldNames = {
 
 const DEFAULT_GASLIMIT = 21000;
 
-class SendScreen extends Component {
+class RequestScreen extends Component {
     constructor (props) {
         super(props);
 
@@ -122,39 +126,45 @@ class SendScreen extends Component {
     }
 
     async updateGasPrice() {
-        this.gasPrice = await this.testWeb3.eth.getGasPrice();
-        const BN = this.testWeb3.utils.BN;
-        let gasPrice = new BN(this.gasPrice);
-        const commissionBN = gasPrice.mul(new BN(DEFAULT_GASLIMIT));
+        this.gasPrice = await new Promise((resolve, reject) => {
+            this.testWeb3.eth.getGasPrice((err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+        let gasPrice = this.testWeb3.utils.toBN(this.gasPrice);
+        const commissionBN = gasPrice.mul(this.testWeb3.utils.toBN(DEFAULT_GASLIMIT));
 
-        let commission = this.testWeb3.utils.fromWei(commissionBN, 'ether');
-        this.setState({commission: commission});
+        let com = this.testWeb3.utils.fromWei(commissionBN, 'ether');
+
+        this.setState({commission: com.toString()});
         this.provider.engine.stop();
     }
 
-    async sendTo(event) {
+    async accept(event) {
         event.preventDefault();
-        const toAddress = this.state.address.value;
+
         const {currentAccounts, accountIndex} = this.props.accounts;
         const {balance, networkName} = this.props.wallet;
+        const {requests, requestIndex} = this.props.requests;
+        const requestInfo = requests[requestIndex];
+        console.log('requestInfo', requestInfo);
+
+
+        let toAddress = '';
+        if (requestInfo) {
+            toAddress = requestInfo.data.to;
+        }
 
         const accountAddress = currentAccounts[accountIndex];
 
         let isValid = true;
 
-        const amount = parseFloat(this.state.amount.value);
-        if (Number.isNaN(amount)) {
-            this.fields.amount.error = 'incorrect amount';
-            isValid = false;
-        } else if (amount <= 0) {
-            this.fields.amount.error = 'Amount mast be greater then 0';
-            isValid = false;
-        } else if (amount > balance) {
-            this.fields.amount.error = 'Amount mast be less then you have';
-            isValid = false;
-        }
 
-        if (!Web3.utils.isAddress(this.state.address.value)) {
+        if (toAddress && !this.testWeb3.utils.isAddress(toAddress)) {
             this.fields.address.error = 'Invalid address';
             isValid = false;
         }
@@ -165,24 +175,34 @@ class SendScreen extends Component {
             isValid = false;
         }
 
+        //const wallData = AuthHelper.getUserDataFormStorage('xamlo2', 'a1a2a3a4');
+        //console.log('wallData', wallData, this.testWeb3.accounts);
+        //isValid = false;
+
         if (isValid) {
             // connect
             let web3 = null;
+            console.log('form is valid');
 
             const transactionObject = {
                 from: accountAddress,
-                to: toAddress,
                 gasPrice: this.gasPrice,
-                gas: DEFAULT_GASLIMIT,
-                value: Web3.utils.toWei(this.state.amount.value, 'ether')
+                //gas: DEFAULT_GASLIMIT,
+                value: requestInfo.data.value
             };
+
+            if (toAddress) {
+                transactionObject.to = toAddress;
+            }
+
+            if (requestInfo.data.data) {
+                transactionObject.data = requestInfo.data.data;
+            }
 
             let networkUri = NetHelper.getNetworkUri(networkName);
             // authorize by mnemonic
-            let onEnd = () => {};
             if (typeof data === 'string') {
                 const provider = new HDWalletProvider(data, networkUri, 0, 10);
-                onEnd = () => {provider.engine.stop()};
                 web3 = new Web3(provider);
 
                 web3.eth.defaultAccount = accountAddress;
@@ -193,8 +213,20 @@ class SendScreen extends Component {
 
             this.setState({sendInProgress: true});
             try {
+
+                const gas = await web3.eth.estimateGas(transactionObject);
+                console.log('gas limit', gas);
+                transactionObject.gas = gas;
+
                 const transactionInfo = await web3.eth.sendTransaction(transactionObject);
+
                 console.log('TransactionInfo:', transactionInfo);
+
+                streamActionsController.sendResponse({
+                    requestId: requestInfo.requestId,
+                    additionalData: requestInfo.additionalData,
+                    data: {response: transactionInfo}
+                });
 
                 //show dialog
                 const amount = this.state.amount.value;
@@ -209,6 +241,12 @@ class SendScreen extends Component {
                 });
             } catch (error) {
                 console.log('TransactionError:', error);
+
+                streamActionsController.sendResponse({
+                    requestId: requestInfo.requestId,
+                    additionalData: requestInfo.additionalData,
+                    data: {err: error}
+                });
                 //show dialog with error
                 this.setState({
                     openDialogue: true,
@@ -216,11 +254,38 @@ class SendScreen extends Component {
                     dialogueMessage: "Error description:\n" + error.message
                 });
             }
-            onEnd();
             this.setState({sendInProgress: false});
             this.props.pageActions.getBalance();
 
+        } else {
+            console.log('form is invalid')
         }
+    }
+
+    async decline(event) {
+        event.preventDefault();
+
+        const {requests, requestIndex} = this.props.requests;
+        const requestInfo = requests[requestIndex];
+
+
+        streamActionsController.sendResponse({
+            requestId: requestInfo.requestId,
+            additionalData: requestInfo.additionalData,
+            data: {
+                err: {
+                    message: 'Request was rejected by user'
+                }
+            }
+        });
+        this.props.pageActions.declineRequest();
+    }
+
+    async sall(event) {
+        event.preventDefault();
+        const {requests, requestIndex} = this.props.requests;
+
+        console.log('requestsInfo', requests, requestIndex);
     }
 
     setValue(event, fieldName) {
@@ -240,12 +305,24 @@ class SendScreen extends Component {
                 dialogueMessage: null
             });
         } else {
-            this.props.pageActions.changeScreen(ScreenNames.MAIN_SCREEN);
+            this.props.pageActions.declineRequest();
+            this.setState({
+                openDialogue: false,
+                dialogueTitle: '',
+                dialogueMessage: null
+            });
         }
     }
 
     render() {
         const {classes} = this.props;
+        const {requests, requestIndex} = this.props.requests;
+        const requestInfo = requests[requestIndex];
+
+        let amount = '0';
+        if (requestInfo) {
+            amount = this.testWeb3.utils.fromWei(this.testWeb3.utils.toBN(requestInfo.data.value), 'ether').toString();
+        }
 
         return (
             <Grid
@@ -254,7 +331,7 @@ class SendScreen extends Component {
                 <GoMainHeader screenName={ScreenNames.MAIN_SCREEN}>
                     Send
                 </GoMainHeader>
-                <form onSubmit={this.sendTo.bind(this)}>
+                <form onSubmit={this.accept.bind(this)}>
                     <Grid
                         container
                         style={{ paddingTop: '32px' }}
@@ -270,23 +347,74 @@ class SendScreen extends Component {
                             <span className={classes.amountText}>{this.props.wallet.balance} ETH</span>
                         </div>
                     </Grid>
-                    <Grid
-                        container
-                        style={{ paddingTop: '32px' }}
-                        justify='center'>
-                        <FormControl
-                            variant="filled"
-                            error={!!this.state.address.error}>
-                            <InputLabel htmlFor="component-filled">Send to</InputLabel>
-                            <FilledInput id="component-filled"
-                                         value={this.state.address.value}
-                                         onChange={event => this.setValue(event, FieldNames.address)} />
-                            {this.state.address.error
-                                ? <FormHelperText id="component-error-text">{this.state.address.error}</FormHelperText>
-                                : null
-                            }
-                        </FormControl>
-                    </Grid>
+                    {
+                        requests.length
+                            ? <Grid
+                                container
+                                style={{paddingTop: '32px'}}
+                                justify='center'>
+                                <RequestSelector/>
+                              </Grid>
+                            : null
+                    }
+                    {
+                        requests.length && requestInfo.data.to
+                            ? <Grid
+                                container
+                                style={{paddingTop: '32px'}}
+                                justify='center'>
+
+                                <FormControl
+                                    variant="filled"
+                                    error={!!this.state.address.error}>
+                                    <InputLabel htmlFor="component-filled">Send to</InputLabel>
+                                    <FilledInput id="component-filled"
+                                                 disabled={true}
+                                                 value={requestInfo.data.to}
+                                                 onChange={event => this.setValue(event, FieldNames.address)}/>
+                                    {this.state.address.error
+                                        ? <FormHelperText
+                                            id="component-error-text">{this.state.address.error}</FormHelperText>
+                                        : null
+                                    }
+                                </FormControl>
+                              </Grid>
+                            : null
+                    }
+                    {
+                        requests.length && requestInfo.additionalData.additionalData
+                            ? <Grid
+                                container
+                                style={{paddingTop: '32px'}}
+                                justify='flex-start'>
+                                <Tooltip title={requestInfo.additionalData.additionalData.location}>
+                                    <Typography noWrap={true} style={{width: '240px'}}>
+                                        Site location: {requestInfo.additionalData.additionalData.location}
+                                    </Typography>
+                                </Tooltip>
+                              </Grid>
+                            : null
+                    }
+                    {
+                        requests.length && requestInfo.data.data
+                            ? <Grid
+                                container
+                                style={{paddingTop: '32px'}}
+                                justify='flex-start'>
+                                <Typography>Deploy contract</Typography>
+                              </Grid>
+                            : null
+                    }
+                    {
+                        requests.length === 0
+                            ? <Grid
+                                container
+                                style={{paddingTop: '32px'}}
+                                justify='flex-start'>
+                                <Typography>No active requests</Typography>
+                              </Grid>
+                            : null
+                    }
                     <Grid
                         container
                         style={{ paddingTop: '32px' }}
@@ -296,8 +424,8 @@ class SendScreen extends Component {
                             error={!!this.state.amount.error}>
                             <InputLabel htmlFor="component-filled">Amount</InputLabel>
                             <FilledInput id="component-filled"
-                                         value={this.state.amount.value}
-                                         onChange={event => this.setValue(event, FieldNames.amount)} />
+                                         value={amount}
+                                         disabled={true} />
                             {this.state.amount.error
                                 ? <FormHelperText id="component-error-text">{this.state.amount.error}</FormHelperText>
                                 : null
@@ -343,16 +471,34 @@ class SendScreen extends Component {
                             }
                         </FormControl>
                     </Grid>
-                    <Grid
-                        container
-                        style={{ padding: '32px 0' }}
-                        justify='center'>
-                        <Button variant='contained'
-                                color='secondary'
-                                size='large'
-                                type='submit'
-                                onClick={this.sendTo.bind(this)}>Send</Button>
-                    </Grid>
+                    {
+                        requests.length
+                            ? <Grid
+                                container
+                                style={{padding: '32px 0'}}
+                                justify='center'>
+                                <Button variant='contained'
+                                        color='secondary'
+                                        size='large'
+                                        type='submit'
+                                        onClick={this.accept.bind(this)}>Accept</Button>
+                              </Grid>
+                            : null
+                    }
+                    {
+                        requests.length
+                            ? <Grid
+                                container
+                                style={{padding: '32px 0'}}
+                                justify='center'>
+                                <Button variant='contained'
+                                        color='secondary'
+                                        size='large'
+                                        type='submit'
+                                        onClick={this.decline.bind(this)}>Decline</Button>
+                              </Grid>
+                            : null
+                    }
                 </form>
                 {this.state.sendInProgress
                     ? <Backdrop open={this.state.sendInProgress} className={classes.backdrop}/>
@@ -399,9 +545,10 @@ class SendScreen extends Component {
  * Set data types for App
  * @type {Object}
  */
-SendScreen.propTypes = {
+RequestScreen.propTypes = {
     accounts: PropTypes.object.isRequired,
     wallet: PropTypes.object.isRequired,
+    requests: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired
 };
 
@@ -413,7 +560,8 @@ SendScreen.propTypes = {
 function mapStateToProps(state) {
     return {
         accounts: state.accounts,
-        wallet: state.wallet
+        wallet: state.wallet,
+        requests: state.requests
     }
 }
 
@@ -430,4 +578,4 @@ function mapDispatchToProps(dispatch) {
 export default withStyles(styles)(connect(
     mapStateToProps,
     mapDispatchToProps
-)(SendScreen))
+)(RequestScreen))

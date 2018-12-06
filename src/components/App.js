@@ -6,7 +6,9 @@ import { bindActionCreators } from 'redux';
 import { PageActions } from '../actions/index';
 import { ScreenNames } from '../reducers/screen';
 import AboutScreen from './AboutScreen';
+import ContractScreen from './ContractScreen';
 import MainScreen from './MainScreen';
+import RequestScreen from './RequestScreen';
 import SendScreen from './SendScreen';
 import SignInScreen from './SignInScreen';
 import SignUpChooseType from './SignUpChooseType';
@@ -33,6 +35,9 @@ class App extends Component {
             case ScreenNames.SEND_SCREEN:
                 screenComponent = <SendScreen/>;
                 break;
+            case ScreenNames.REQUEST_SCREEN:
+                screenComponent = <RequestScreen/>;
+                break;
             case ScreenNames.ABOUT_SCREEN:
                 screenComponent = <AboutScreen/>;
                 break;
@@ -41,6 +46,9 @@ class App extends Component {
                 break;
             case ScreenNames.SIGN_UP_KEYS:
                 screenComponent = <SignUpPrivateKeyScreen/>;
+                break;
+            case ScreenNames.CONTRACT_SCREEN:
+                screenComponent = <ContractScreen/>;
                 break;
             case ScreenNames.SIGN_IN_SCREEN:
             default:
