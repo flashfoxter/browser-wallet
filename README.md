@@ -10,6 +10,7 @@
   - View transactions history (via [Etherscan](https://etherscan.io))
   - Contracts support: load ABI from Etherscan or file, list methods, dynamic UI
   - Address QR Code support
+  - web3 injection and transactions handling
 
 ![Login](https://github.com/tigerdevpool/browser-wallet/blob/master/screenshots/Login.PNG)
 ![Sign-Up](https://github.com/tigerdevpool/browser-wallet/blob/master/screenshots/SignUp.PNG)
@@ -17,6 +18,7 @@
 ![Transaction](https://github.com/tigerdevpool/browser-wallet/blob/master/screenshots/Transaction.PNG)
 ![Contract](https://github.com/tigerdevpool/browser-wallet/blob/master/screenshots/Contract.PNG)
 ![QR Code](https://github.com/tigerdevpool/browser-wallet/blob/master/screenshots/QrCode.PNG)
+![Remix web3 injection](https://github.com/tigerdevpool/browser-wallet/blob/master/screenshots/Remix.PNG)
 
 # Installation
 
